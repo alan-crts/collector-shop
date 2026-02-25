@@ -3,12 +3,12 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - database/secret.yaml
+  - database/sealed-secret.yaml
   - database/statefulset.yaml
-  - minio/secret.yaml
+  - minio/sealed-secret.yaml
   - minio/statefulset.yaml
   - minio/setup-job.yaml
-  - backend/secret.yaml
+  - backend/sealed-secret.yaml
   - backend/deployment.yaml
   - frontend/deployment.yaml
   - ingress.yaml
