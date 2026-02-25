@@ -5,7 +5,14 @@ metadata:
   namespace: collector-shop-prod
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: selfsigned-issuer
 spec:
+  tls:
+    - hosts:
+        - api.collector-shop.local
+        - collector-shop.local
+        - minio.collector-shop.local
+      secretName: collector-shop-tls
   rules:
     - host: api.collector-shop.local
       http:
