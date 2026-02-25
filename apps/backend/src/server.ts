@@ -1,0 +1,25 @@
+import express from "express";
+import cors from "cors";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth.js";
+import itemRoutes from "./routes/itemRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+
+const app = express();
+const port = 8000;
+
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}));
+
+app.all("/api/auth/*path", toNodeHandler(auth));
+
+app.use(express.json());
+
+app.use("/api/items", itemRoutes);
+app.use("/api/upload", uploadRoutes);
+
+app.listen(port, () => {
+    console.log(`Better Auth app listening on port ${port}`);
+});

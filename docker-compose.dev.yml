@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: collector-shop-db-dev
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: collector_shop
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile.dev
+    container_name: collector-shop-backend-dev
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/collector_shop?sslmode=disable
+      BETTER_AUTH_SECRET: ABsUbdGctTW8vfORzukfmdik0hrGWdEA
+      BETTER_AUTH_URL: http://localhost:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/backend/src:/app/src
+      - ./apps/backend/prisma:/app/prisma
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile.dev
+    container_name: collector-shop-frontend-dev
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      INTERNAL_API_URL: http://backend:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/frontend/src:/app/src
+      - ./apps/frontend/public:/app/public
+    depends_on:
+      - backend
+
+  minio:
+    image: minio/minio
+    container_name: collector-shop-minio-dev
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data_dev:/data
+
+  minio-setup:
+    image: minio/mc
+    container_name: collector-shop-minio-setup-dev
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 admin password123;
+      mc mb myminio/collector-shop || true;
+      mc anonymous set public myminio/collector-shop;
+      exit 0;
+      "
+
+volumes:
+  postgres_data_dev:
+  minio_data_dev:

@@ -1,0 +1,19 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install dependencies first for caching
+COPY package*.json ./
+RUN npm install
+
+# Copy the rest of the files
+COPY . .
+
+# Generate Prisma client (standard location node_modules)
+RUN npx prisma generate
+
+# Expose backend port
+EXPOSE 8000
+
+# Start with hot-reload (npm run dev use tsc-watch)
+CMD ["npm", "run", "dev"]
