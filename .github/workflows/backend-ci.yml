@@ -4,10 +4,12 @@ on:
     branches: [ "main" ]
     paths:
       - 'apps/backend/**'
+      - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'apps/backend/**'
+      - '.github/workflows/backend-ci.yml'
 
 env:
   REGISTRY: ghcr.io
