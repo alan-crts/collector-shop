@@ -55,6 +55,12 @@ grafana:
     ingressClassName: nginx
     hosts:
       - grafana.collector-shop.local
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki:3100
+      access: proxy
+      isDefault: false
 EOF
   ]
 }
@@ -71,4 +77,21 @@ resource "helm_release" "cert_manager" {
     name  = "crds.enabled"
     value = "true"
   }
+}
+
+resource "helm_release" "loki" {
+  name       = "loki"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "loki-stack"
+  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  version    = "2.10.2"
+
+  values = [
+    <<EOF
+loki:
+  isDefault: false
+promtail:
+  enabled: true
+EOF
+  ]
 }
