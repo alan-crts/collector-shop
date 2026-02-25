@@ -27,8 +27,7 @@ spec:
     spec:
       containers:
         - name: backend
-          # TODO: REMPLACER PAR VOTRE IMAGE GITHUB
-          image: ghcr.io/VOTRE_COMPTE_GITHUB/collector-shop-backend:latest
+          image: ghcr.io/alan-crts/collector-shop-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

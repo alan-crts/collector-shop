@@ -6,8 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    # TODO: Remplacer par l'URL de votre dépôt Github
-    repoURL: 'https://github.com/VOTRE_COMPTE_GITHUB/collector-shop.git'
+    repoURL: 'https://github.com/alan-crts/collector-shop.git'
     path: infra/k8s
     targetRevision: main
   destination:
