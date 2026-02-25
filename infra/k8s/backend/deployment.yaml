@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/alan-crts/collector-shop-backend:latest
+          image: ghcr.io/alan-crts/collector-shop-backend:main
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
