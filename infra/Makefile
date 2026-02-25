@@ -2,7 +2,7 @@
 MINIKUBE_PROFILE ?= default
 TERRAFORM_DIR = terraform
 
-.PHONY: help start stop install-argocd deploy port-forward clean status
+.PHONY: help start stop install-argocd deploy port-forward clean status seal grafana-pass
 
 # Affiche l'aide
 help:
@@ -14,6 +14,8 @@ help:
 	@echo "  make port-forward   - Rend ArgoCD accessible sur The localhost:8080"
 	@echo "  make status         - Affiche le statut général du cluster minikube"
 	@echo "  make hosts          - Ajoute l'IP de Minikube dans /etc/hosts (Nécessite sudo)"
+	@echo "  make seal           - Chiffre tous les fichiers secret.yaml en sealed-secret.yaml"
+	@echo "  make grafana-pass   - Affiche les identifiants pour se connecter à Grafana"
 	@echo "  make clean          - (!DANGER!) Détruit minikube et supprime l'état Terraform"
 
 # Démarrer le cluster
@@ -40,8 +42,8 @@ hosts:
 	if grep -q "collector-shop.local" /etc/hosts; then \
 		echo "Les noms de domaine existent déjà dans /etc/hosts. Vérifiez manuellement qu'ils pointent bien vers $$IP."; \
 	else \
-		echo "sudo sh -c 'echo \"$$IP api.collector-shop.local collector-shop.local minio.collector-shop.local\" >> /etc/hosts'"; \
-		sudo sh -c "echo \"$$IP api.collector-shop.local collector-shop.local minio.collector-shop.local\" >> /etc/hosts"; \
+		echo "sudo sh -c 'echo \"$$IP api.collector-shop.local collector-shop.local minio.collector-shop.local grafana.collector-shop.local\" >> /etc/hosts'"; \
+		sudo sh -c "echo \"$$IP api.collector-shop.local collector-shop.local minio.collector-shop.local grafana.collector-shop.local\" >> /etc/hosts"; \
 		echo "✅ Entrées ajoutées avec succès."; \
 	fi
 
@@ -69,3 +71,29 @@ clean:
 	minikube delete
 	rm -rf $(TERRAFORM_DIR)/.terraform $(TERRAFORM_DIR)/terraform.tfstate $(TERRAFORM_DIR)/terraform.tfstate.backup
 	@echo "✅ Cluster détruit et état Terraform nettoyé."
+
+# Chiffrer les secrets locaux
+seal:
+	@echo "🔒 Chiffrement des fichiers de secrets via kubeseal..."
+	@if ! command -v kubeseal >/dev/null 2>&1; then \
+		echo "❌ Erreur: kubeseal n'est pas installé. Exécutez: brew install kubeseal"; \
+		exit 1; \
+	fi
+	@for secret in $$(find k8s -name "secret.yaml"); do \
+		dir=$$(dirname $$secret); \
+		echo "🔐 \033[36m$$secret\033[0m -> \033[32m$$dir/sealed-secret.yaml\033[0m"; \
+		kubeseal --format=yaml --cert=kubeseal-cert.crt < $$secret > $$dir/sealed-secret.yaml; \
+	done
+	@echo "✅ Chiffrement terminé. Vous pouvez maintenant supprimer vos anciens fichiers secret.yaml !"
+
+# Obtenir les identifiants Grafana
+grafana-pass:
+	@echo "📊 Identifiants de connexion au dashboard Grafana :"
+	@echo "URL         : http://grafana.collector-shop.local"
+	@echo "Utilisateur : admin"
+	@echo -n "Password    : "
+	@if kubectl get secret --namespace monitoring prometheus-grafana >/dev/null 2>&1; then \
+		kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d; echo ""; \
+	else \
+		echo "admin (ou non disponible)"; \
+	fi

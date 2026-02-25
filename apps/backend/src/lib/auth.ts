@@ -21,7 +21,7 @@ export const auth = betterAuth({
         },
     },
     trustedOrigins: [
-        "http://localhost:3000",
-        "http://localhost:8000",
+        process.env.FRONTEND_URL || "http://localhost:3000",
+        process.env.BETTER_AUTH_BASE_URL || "http://localhost:8000",
     ],
 });
