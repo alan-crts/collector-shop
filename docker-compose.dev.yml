@@ -6,9 +6,9 @@ services:
     container_name: collector-shop-db-dev
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: collector_shop
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -21,8 +21,8 @@ services:
     container_name: collector-shop-backend-dev
     restart: always
     environment:
-      DATABASE_URL: postgresql://postgres:password@db:5432/collector_shop?sslmode=disable
-      BETTER_AUTH_SECRET: ABsUbdGctTW8vfORzukfmdik0hrGWdEA
+      DATABASE_URL: ${DATABASE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: http://localhost:8000
     ports:
       - "8000:8000"

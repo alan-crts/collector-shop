@@ -25,7 +25,7 @@
     "babel-jest": "^30.2.0",
     "jest": "^30.2.0",
     "node-mocks-http": "^1.17.2",
-    "prisma": "^6.19.2",
+    "prisma": "^6.3.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
@@ -33,8 +33,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.996.0",
     "@aws-sdk/s3-request-presigner": "^3.996.0",
-    "@prisma/adapter-pg": "^7.4.1",
-    "@prisma/client": "^7.4.1",
+    "@prisma/adapter-pg": "^6.3.1",
+    "@prisma/client": "^6.3.1",
     "better-auth": "^1.4.18",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
