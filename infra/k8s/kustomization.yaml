@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - database/sealed-secret.yaml
   - database/statefulset.yaml
+  - database/backup-cronjob.yaml
   - minio/sealed-secret.yaml
   - minio/statefulset.yaml
   - minio/setup-job.yaml

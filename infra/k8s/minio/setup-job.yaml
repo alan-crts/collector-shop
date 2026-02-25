@@ -20,4 +20,5 @@ spec:
           mc alias set myminio http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD;
           mc mb myminio/collector-shop || true;
           mc anonymous set public myminio/collector-shop;
+          mc mb myminio/collector-shop-backups || true;
       restartPolicy: OnFailure

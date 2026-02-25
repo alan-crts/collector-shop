@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-backup-cronjob
+  namespace: collector-shop-prod
+spec:
+  schedule: "0 3 * * *" # Every day at 3 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+          - name: mc-provider
+            image: minio/mc
+            command: ["/bin/sh", "-c", "cp /usr/bin/mc /shared/mc && chmod +x /shared/mc"]
+            volumeMounts:
+            - name: shared-bin
+              mountPath: /shared
+          containers:
+          - name: backup
+            image: postgres:16-alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              export PATH=$PATH:/shared
+              DATE=$(date +%Y%m%d_%H%M%S)
+              FILENAME="backup_$DATE.dump"
+              
+              echo "Starting database backup..."
+              PGPASSWORD=$POSTGRES_PASSWORD pg_dump -h db -U $POSTGRES_USER -d $POSTGRES_DB -F c -f /tmp/$FILENAME
+              
+              echo "Uploading to MinIO..."
+              mc alias set myminio http://minio:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD
+              mc cp /tmp/$FILENAME myminio/collector-shop-backups/
+              
+              echo "Backup complete!"
+            envFrom:
+              - secretRef:
+                  name: db-secret
+              - secretRef:
+                  name: minio-secret
+            volumeMounts:
+            - name: shared-bin
+              mountPath: /shared
+          restartPolicy: OnFailure
+          volumes:
+          - name: shared-bin
+            emptyDir: {}
