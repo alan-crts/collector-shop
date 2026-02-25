@@ -40,4 +40,4 @@ spec:
             - containerPort: 3000
           env:
             - name: NEXT_PUBLIC_API_URL
-              value: http://api.collector-shop.local
+              value: https://api.collector-shop.local
