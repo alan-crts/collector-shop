@@ -29,6 +29,13 @@ spec:
         - name: frontend
           image: ghcr.io/alan-crts/collector-shop-frontend:main
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
           ports:
             - containerPort: 3000
           env:

@@ -29,6 +29,13 @@ spec:
         - name: backend
           image: ghcr.io/alan-crts/collector-shop-backend:main
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
           ports:
             - containerPort: 8000
           envFrom:

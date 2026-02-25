@@ -39,6 +39,13 @@ spec:
             - /data
             - --console-address
             - :9001
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           ports:
             - containerPort: 9000
             - containerPort: 9001
