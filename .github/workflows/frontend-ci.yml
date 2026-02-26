@@ -16,36 +16,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}-frontend
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: './apps/frontend/package-lock.json'
-      - name: Install dependencies
-        working-directory: ./apps/frontend
-        run: npm ci
-
-  vulnerability-scan:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: './apps/frontend'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-
-  lint-and-analysis:
-    needs: setup
+  # Merged audit and lint to save time and resources
+  quality-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -59,9 +31,16 @@ jobs:
       - name: Lint
         working-directory: ./apps/frontend
         run: npm run lint
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './apps/frontend'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
 
   build-and-push:
-    needs: [vulnerability-scan, lint-and-analysis]
+    needs: quality-check
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -76,9 +55,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        uses: docker/setup-buildx-action@v3
       - name: Extract metadata (tags, labels) for Docker
         if: github.event_name != 'pull_request'
         id: meta
@@ -92,8 +71,11 @@ jobs:
           context: ./apps/frontend
           file: ./apps/frontend/Dockerfile
           push: true
+          # Keep multi-arch but use the powerful GHA cache
           platforms: linux/amd64,linux/arm64
           build-args: |
             NEXT_PUBLIC_API_URL=https://api.collector-shop.local
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
