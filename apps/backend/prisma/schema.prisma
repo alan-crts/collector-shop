@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
@@ -15,29 +9,26 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  role          Role     @default(BUYER)
-  name          String
-  emailVerified Boolean  @default(false)
-  image         String?
-  isBanned      Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  sessions Session[]
-  accounts Account[]
-
-  // Phase 8 relations
+  id               String         @id @default(cuid())
+  email            String         @unique
+  createdAt        DateTime       @default(now())
+  name             String
+  emailVerified    Boolean        @default(false)
+  image            String?
+  updatedAt        DateTime       @updatedAt
+  role             Role           @default(BUYER)
+  isBanned         Boolean        @default(false)
   items            Item[]
-  interests        Category[] // Implicit Many-to-Many
+  accounts         Account[]
+  messagesReceived Message[]      @relation("Receiver")
+  messagesSent     Message[]      @relation("Sender")
+  notifications    Notification[]
+  reviewsReceived  Review[]       @relation("Reviewee")
+  reviewsGiven     Review[]       @relation("Reviewer")
+  sessions         Session[]
   purchases        Transaction[]  @relation("Buyer")
   sales            Transaction[]  @relation("Seller")
-  reviewsGiven     Review[]       @relation("Reviewer")
-  reviewsReceived  Review[]       @relation("Reviewee")
-  messagesSent     Message[]      @relation("Sender")
-  messagesReceived Message[]      @relation("Receiver")
-  notifications    Notification[]
+  interests        Category[]     @relation("CategoryToUser")
 
   @@map("user")
 }
@@ -47,63 +38,59 @@ model Category {
   name            String
   slug            String @unique
   items           Item[]
-  interestedUsers User[]
+  interestedUsers User[] @relation("CategoryToUser")
 
   @@map("category")
 }
 
 model Item {
-  id           String     @id @default(cuid())
+  id           String        @id @default(cuid())
   title        String
   description  String
   price        Float
-  shippingCost Float      @default(0.0)
-  status       ItemStatus @default(PENDING)
-  images       String[]   @default([])
-
-  sellerId   String
-  seller     User      @relation(fields: [sellerId], references: [id])
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  transactions Transaction[]
+  sellerId     String
+  status       ItemStatus    @default(PENDING)
+  images       String[]      @default([])
+  categoryId   String?
+  createdAt    DateTime      @default(now())
+  shippingCost Float         @default(0.0)
+  updatedAt    DateTime      @default(now()) @updatedAt
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  seller       User          @relation(fields: [sellerId], references: [id])
   messages     Message[]
+  transactions Transaction[]
 }
 
 model Transaction {
   id              String            @id @default(cuid())
   itemId          String
-  item            Item              @relation(fields: [itemId], references: [id])
   buyerId         String
-  buyer           User              @relation("Buyer", fields: [buyerId], references: [id])
   sellerId        String
-  seller          User              @relation("Seller", fields: [sellerId], references: [id])
   amount          Float
   commission      Float
   status          TransactionStatus @default(PENDING)
   stripeSessionId String?           @unique
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-
   reviews         Review[]
+  buyer           User              @relation("Buyer", fields: [buyerId], references: [id])
+  item            Item              @relation(fields: [itemId], references: [id])
+  seller          User              @relation("Seller", fields: [sellerId], references: [id])
 
   @@map("transaction")
 }
 
 model Review {
-  id         String   @id @default(cuid())
-  rating     Int
-  comment    String?
+  id            String       @id @default(cuid())
+  rating        Int
+  comment       String?
   reviewerId    String
-  reviewer      User         @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
   revieweeId    String
-  reviewee      User         @relation("Reviewee", fields: [revieweeId], references: [id], onDelete: Cascade)
-  transactionId String?
-  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   createdAt     DateTime     @default(now())
+  transactionId String?
+  reviewee      User         @relation("Reviewee", fields: [revieweeId], references: [id], onDelete: Cascade)
+  reviewer      User         @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@unique([reviewerId, transactionId])
   @@map("review")
@@ -111,19 +98,18 @@ model Review {
 
 model Message {
   id          String       @id @default(cuid())
-  type        MessageType  @default(TEXT)
   content     String
-  offerPrice  Float? // Only valid if type is OFFER
-  offerStatus OfferStatus? // PENDING, ACCEPTED, REJECTED
-
-  senderId   String
-  sender     User     @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId String
-  receiver   User     @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  itemId     String?
-  item       Item?    @relation(fields: [itemId], references: [id], onDelete: SetNull)
-  isRead     Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  senderId    String
+  receiverId  String
+  itemId      String?
+  isRead      Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  offerPrice  Float?
+  offerStatus OfferStatus?
+  type        MessageType  @default(TEXT)
+  item        Item?        @relation(fields: [itemId], references: [id])
+  receiver    User         @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender      User         @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@map("message")
 }
@@ -131,11 +117,11 @@ model Message {
 model Notification {
   id        String           @id @default(cuid())
   userId    String
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      NotificationType
   content   String
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notification")
 }
@@ -143,7 +129,7 @@ model Notification {
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -151,7 +137,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
   @@map("session")
 }
@@ -161,7 +146,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -171,6 +155,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")

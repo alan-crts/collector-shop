@@ -4,13 +4,13 @@ MINIKUBE_CPUS ?= 4
 MINIKUBE_MEMORY ?= 8192
 TERRAFORM_DIR = terraform
 
-.PHONY: help up start stop install-argocd deploy port-forward tunnel clean status seal get-cert grafana-pass stripe-login stripe-listen
+.PHONY: help up start stop install-argocd deploy db-init port-forward tunnel clean status seal get-cert grafana-pass stripe-login stripe-listen
 
 # Affiche l'aide
 help:
 	@echo "🛠️  Infrastructure Collector Shop Commandes :"
-	@echo "  make up             - 🔥 Démarre TOUT l'environnement (start + hosts + argocd + deploy)"
 	@echo "  make start          - Démarre minikube avec l'addon ingress"
+	@echo "  make up             - 🔥 Démarre TOUT l'environnement (start + hosts + argocd + deploy + db-init)"
 	@echo "  make stop           - Arrête minikube"
 	@echo "  make install-argocd - Initialise et applique Terraform pour installer ArgoCD"
 	@echo "  make deploy         - Déploie l'application GitOps ArgoCD (synchronise le dossier k8s)"
@@ -25,8 +25,8 @@ help:
 	@echo "  make clean          - (!DANGER!) Détruit minikube et supprime l'état Terraform"
 
 # Monter toute l'infrastructure
-up: start hosts install-argocd get-cert seal deploy
-	@echo "🚀 L'infrastructure est en completement opérationnelle !"
+up: start hosts install-argocd get-cert seal deploy db-init
+	@echo "🚀 L'infrastructure est complètement opérationnelle et la DB est prête !"
 	@echo "Utilisez 'make port-forward' pour accéder à ArgoCD."
 
 # Démarrer le cluster
@@ -74,6 +74,16 @@ deploy:
 	@echo "🚢 Déploiement de l'Application ArgoCD (GitOps)..."
 	kubectl apply -f argo/application.yaml
 	@echo "Ressources synchronisées. Les secrets locaux ont déjà été appliqués."
+
+# Initialiser la base de données (Migrations + Seed)
+db-init:
+	@echo "⏳ Attente du pod backend..."
+	@kubectl wait --for=condition=ready pod -l app=backend -n collector-shop-prod --timeout=120s
+	@echo "🔄 Exécution des migrations Prisma..."
+	@kubectl exec -n collector-shop-prod -it $$(kubectl get pods -n collector-shop-prod -l app=backend -o jsonpath="{.items[0].metadata.name}") -- npx prisma migrate deploy
+	@echo "🌱 Seeding de la base de données..."
+	@kubectl exec -n collector-shop-prod -it $$(kubectl get pods -n collector-shop-prod -l app=backend -o jsonpath="{.items[0].metadata.name}") -- npx prisma db seed
+	@echo "✅ Base de données initialisée !"
 
 # Redirection de port pour ArgoCD
 port-forward:

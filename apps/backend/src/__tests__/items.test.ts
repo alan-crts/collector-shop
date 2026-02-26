@@ -3,12 +3,10 @@ import { ItemService } from "../services/itemService.js";
 import { createRequest, createResponse } from "node-mocks-http";
 import { jest, describe, it, expect, afterEach, beforeEach } from "@jest/globals";
 
-// We spy on the service so no DB calls are actually made
 import prisma from "../lib/prisma.js";
 
 describe("ItemController CRUD Operations", () => {
     beforeEach(() => {
-        // Mock Prisma to prevent database hits during admin checks
         jest.spyOn(prisma.user, "findUnique").mockResolvedValue({ role: "USER" } as any);
     });
 
