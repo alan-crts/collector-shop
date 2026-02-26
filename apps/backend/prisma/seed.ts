@@ -1,11 +1,19 @@
 import { PrismaClient, Role, ItemStatus, TransactionStatus, MessageType, OfferStatus, NotificationType } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { auth } from '../src/lib/auth.js';
-
 const prisma = new PrismaClient();
 
 async function main() {
     console.log('🌱 Starting seeding...');
+
+    // Load auth dynamically (works in dev with src and prod with dist)
+    let auth: any;
+    try {
+        const authModule = await import('../src/lib/auth.js');
+        auth = authModule.auth;
+    } catch (e) {
+        const authModule = await import('../dist/lib/auth.js');
+        auth = authModule.auth;
+    }
 
     // 1. Clean the database
     console.log('Cleaning database...');

@@ -1,8 +1,10 @@
 # Variables
 MINIKUBE_PROFILE ?= default
+MINIKUBE_CPUS ?= 4
+MINIKUBE_MEMORY ?= 8192
 TERRAFORM_DIR = terraform
 
-.PHONY: help start stop install-argocd deploy port-forward clean status seal grafana-pass
+.PHONY: help start stop install-argocd deploy port-forward clean status seal grafana-pass stripe-login stripe-listen
 
 # Affiche l'aide
 help:
@@ -15,13 +17,20 @@ help:
 	@echo "  make status         - Affiche le statut général du cluster minikube"
 	@echo "  make hosts          - Ajoute l'IP de Minikube dans /etc/hosts (Nécessite sudo)"
 	@echo "  make seal           - Chiffre tous les fichiers secret.yaml en sealed-secret.yaml"
+	@echo "  make stripe-login   - Connecte le CLI Stripe à votre compte"
+	@echo "  make stripe-listen  - Redirige les événements Stripe vers le webhook local"
 	@echo "  make grafana-pass   - Affiche les identifiants pour se connecter à Grafana"
 	@echo "  make clean          - (!DANGER!) Détruit minikube et supprime l'état Terraform"
 
 # Démarrer le cluster
 start:
-	@echo "🚀 Démarrage de Minikube..."
-	minikube start --addons=ingress
+	@echo "🚀 Démarrage de Minikube (Optimisé pour Apple Silicon)..."
+	minikube start \
+		--addons=ingress,metrics-server \
+		--cpus $(MINIKUBE_CPUS) \
+		--memory $(MINIKUBE_MEMORY) \
+		--driver=qemu \
+		--container-runtime=containerd
 
 # Arrêter le cluster
 stop:
@@ -97,3 +106,13 @@ grafana-pass:
 	else \
 		echo "admin (ou non disponible)"; \
 	fi
+
+# Connexion Stripe
+stripe-login:
+	@echo "🔑 Connexion à Stripe..."
+	stripe login
+
+# Ecouter les webhooks Stripe
+stripe-listen:
+	@echo "📡 Ecoute des événements Stripe et redirection vers le webhook..."
+	stripe listen --forward-to http://api.collector-shop.local/api/payment/webhook

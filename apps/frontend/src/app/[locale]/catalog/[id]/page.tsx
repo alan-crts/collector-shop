@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
-import { getItemById, type Item } from "@/lib/api";
+import { getItemById, createCheckoutSession, type Item } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, ArrowLeft, ShieldCheck, UserCircle2, AlertCircle, ShoppingCart, MessageSquare, Star } from "lucide-react";
+import { Loader2, ArrowLeft, ShieldCheck, UserCircle2, AlertCircle, ShoppingCart, MessageSquare, Star, Zap } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
@@ -52,6 +52,16 @@ export default function ProductPage() {
         }
         fetchProduct();
     }, [params.id]);
+
+    const handleBuy = () => {
+        if (!session) {
+            router.push("/login");
+            return;
+        }
+
+        if (!item) return;
+        router.push(`/checkout?itemId=${item.id}`);
+    };
 
     if (loading) {
         return (
@@ -228,8 +238,9 @@ export default function ProductPage() {
                                 size="lg" 
                                 className="w-full h-14 text-lg font-bold rounded-xl shadow-xl shadow-primary/20"
                                 disabled={!isAvailable || session?.user?.id === item.sellerId}
+                                onClick={handleBuy}
                             >
-                                <ShoppingCart className="w-5 h-5 mr-2" />
+                                <Zap className="w-5 h-5 mr-2 fill-current" />
                                 {isAvailable ? t("addToCart") : t("unavailable")}
                             </Button>
                             
