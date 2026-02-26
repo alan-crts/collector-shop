@@ -59,7 +59,7 @@ describe("ItemController CRUD Operations", () => {
             expect(data.data.status).toBe("APPROVED");
             expect(data.data.commissionFee).toBe(25);
             expect(data.data.images).toEqual(["test.jpg"]);
-            expect(mockCreate).toHaveBeenCalledWith("Card", "Rare card", 500, "seller1", ["test.jpg"]);
+            expect(mockCreate).toHaveBeenCalledWith("Card", "Rare card", 500, "seller1", ["test.jpg"], undefined);
         });
 
         it("should return 400 on invalid input", async () => {

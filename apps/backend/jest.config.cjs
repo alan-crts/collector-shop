@@ -8,4 +8,5 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': 'babel-jest',
   },
+  testPathIgnorePatterns: ["/node_modules/", "/dist/", "\\.d\\.ts$"],
 };
