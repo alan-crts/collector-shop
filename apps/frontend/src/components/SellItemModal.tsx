@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createItem, getPresignedUrl } from "@/lib/api";
+import { useRouter } from "@/i18n/routing";
+import { createItem, getPresignedUrl, fetchCategories, type Category } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -23,14 +24,23 @@ export function SellItemModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("Sell");
   const router = useRouter();
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     price: "",
+    categoryId: "",
   });
+  const [categories, setCategories] = useState<Category[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+
+  React.useEffect(() => {
+    if (isOpen && categories.length === 0) {
+      fetchCategories().then(setCategories).catch(console.error);
+    }
+  }, [isOpen, categories.length]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -50,8 +60,8 @@ export function SellItemModal() {
 
     const priceNum = parseFloat(formData.price.replace(",", "."));
     
-    if (!formData.title || !formData.description || isNaN(priceNum) || priceNum <= 0) {
-      setError("Veuillez remplir tous les champs avec des valeurs valides.");
+    if (!formData.title || !formData.description || isNaN(priceNum) || priceNum <= 0 || !formData.categoryId) {
+      setError(t("errorFields"));
       setLoading(false);
       return;
     }
@@ -71,7 +81,7 @@ export function SellItemModal() {
         });
         
         if (!uploadRes.ok) {
-          throw new Error(`Erreur lors de l'upload de l'image ${file.name}`);
+          throw new Error(`${t("errorUpload")} ${file.name}`);
         }
         
         uploadedImages.push(publicUrl);
@@ -83,17 +93,18 @@ export function SellItemModal() {
         description: formData.description,
         price: priceNum,
         images: uploadedImages,
+        categoryId: formData.categoryId,
       });
       
       setIsOpen(false);
-      setFormData({ title: "", description: "", price: "" });
+      setFormData({ title: "", description: "", price: "", categoryId: "" });
       setFiles([]);
       router.refresh(); // Refresh the page to show the new item
     } catch (err: any) {
       if (err instanceof ApiError) {
-        setError(err.message || "Erreur serveur : impossible de créer l'objet.");
+        setError(err.message || t("errorServer"));
       } else {
-        setError(err.message || "Une erreur s'est produite lors de la création de l'objet.");
+        setError(err.message || t("errorUnexpected"));
       }
     } finally {
       setLoading(false);
@@ -105,17 +116,17 @@ export function SellItemModal() {
       <AlertDialogTrigger asChild>
         <Button className="bg-[#b45309] hover:bg-[#92400e] text-white shadow-md rounded-full px-6 flex items-center gap-2">
           <PlusCircle className="w-5 h-5" />
-          <span>Vendre un Objet</span>
+          <span>{t("trigger")}</span>
         </Button>
       </AlertDialogTrigger>
       
       <AlertDialogContent className="sm:max-w-[425px] bg-[#f8f5f0] border-stone-200 shadow-xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl font-serif text-stone-800">
-            Proposer un objet
+            {t("title")}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-stone-600">
-            Mettez en vente votre objet de collection. Il sera soumis à validation si sa valeur dépasse 1 000 €.
+            {t("description")}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -128,13 +139,13 @@ export function SellItemModal() {
 
           <div className="space-y-4">
             <Field>
-              <Label htmlFor="title" className="text-stone-700 font-medium">Titre de l'objet</Label>
+              <Label htmlFor="title" className="text-stone-700 font-medium">{t("itemTitle")}</Label>
               <Input 
                 id="title" 
                 name="title" 
                 value={formData.title}
                 onChange={handleChange}
-                placeholder="Ex: Appareil Photo Leica M3" 
+                placeholder={t("itemTitlePlaceholder")} 
                 maxLength={100}
                 required
                 className="bg-white border-stone-300 focus-visible:ring-amber-500"
@@ -143,7 +154,7 @@ export function SellItemModal() {
             </Field>
 
             <Field>
-              <Label htmlFor="price" className="text-stone-700 font-medium">Prix estimé (€)</Label>
+              <Label htmlFor="price" className="text-stone-700 font-medium">{t("price")}</Label>
               <Input 
                 id="price" 
                 name="price" 
@@ -152,24 +163,44 @@ export function SellItemModal() {
                 min="0.1"
                 value={formData.price}
                 onChange={handleChange}
-                placeholder="Ex: 1250.00" 
+                placeholder={t("pricePlaceholder")} 
                 required
                 className="bg-white border-stone-300 focus-visible:ring-amber-500"
                 aria-required="true"
               />
               <p className="text-xs text-stone-500 mt-1">
-                Une commission de 5% sera appliquée.
+                {t("commissionHint")}
               </p>
             </Field>
 
             <Field>
-              <Label htmlFor="description" className="text-stone-700 font-medium">Description détaillée</Label>
+              <Label htmlFor="categoryId" className="text-stone-700 font-medium">{t("category")}</Label>
+              <select
+                id="categoryId"
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={(e: any) => handleChange(e)}
+                required
+                className="flex h-10 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-required="true"
+              >
+                <option value="" disabled>{t("categoryPlaceholder")}</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field>
+              <Label htmlFor="description" className="text-stone-700 font-medium">{t("descriptionLabel")}</Label>
               <Textarea 
                 id="description" 
                 name="description" 
                 value={formData.description}
                 onChange={handleChange}
-                placeholder="Décrivez l'état, l'histoire et les particularités de l'objet..." 
+                placeholder={t("descriptionPlaceholder")} 
                 rows={4}
                 required
                 className="bg-white border-stone-300 focus-visible:ring-amber-500 resize-none"
@@ -178,7 +209,7 @@ export function SellItemModal() {
             </Field>
 
             <Field>
-              <Label htmlFor="images" className="text-stone-700 font-medium">Photos (optionnel)</Label>
+              <Label htmlFor="images" className="text-stone-700 font-medium">{t("images")}</Label>
               <Input 
                 id="images" 
                 name="images" 
@@ -189,7 +220,7 @@ export function SellItemModal() {
                 className="bg-white border-stone-300 focus-visible:ring-amber-500"
               />
               <p className="text-xs text-stone-500 mt-1">
-                Sélectionnez plusieurs images pour mieux mettre en valeur votre objet.
+                {t("imagesHint")}
               </p>
             </Field>
           </div>
@@ -202,7 +233,7 @@ export function SellItemModal() {
               disabled={loading}
               className="border-stone-300 text-stone-700 hover:bg-stone-100"
             >
-              Annuler
+              {t("cancel")}
             </Button>
             <Button 
               type="submit" 
@@ -212,10 +243,10 @@ export function SellItemModal() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Envoi...
+                  {t("submitting")}
                 </>
               ) : (
-                "Publier l'objet"
+                t("submit")
               )}
             </Button>
           </div>

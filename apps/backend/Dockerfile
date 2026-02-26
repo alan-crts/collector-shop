@@ -10,7 +10,7 @@ RUN npm ci
 COPY . .
 
 # Generate Prisma Client
-RUN npx prisma generate
+RUN npx prisma@6.3.1 generate
 
 # Build TypeScript
 RUN npx tsc

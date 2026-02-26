@@ -1,0 +1,292 @@
+{
+    "Navigation": {
+        "home": "Accueil",
+        "catalog": "Catalogue",
+        "categories": "Catégories",
+        "sell": "Vendre",
+        "login": "Connexion",
+        "register": "Inscription",
+        "profile": "Mon Profil",
+        "admin": "Admin",
+        "logout": "Déconnexion",
+        "messages": "Messagerie",
+        "language": "Langue",
+        "notifications": "Notifications",
+        "loading": "Chargement...",
+        "noNotifications": "Aucune notification."
+    },
+    "Home": {
+        "newCollection Badge": "Nouvelle Collection 2026 est arrivée",
+        "heroTitle1": "Collectionnez l'Exceptionnel",
+        "heroTitle2": "Collector Shop",
+        "heroDesc": "La destination numéro un pour les collectionneurs passionnés. Découvrez des pièces uniques, authentifiées et rares du monde entier.",
+        "exploreButton": "Explorer les Objets",
+        "sellButton": "Vendre un Objet",
+        "ratingText": "4.9/5 par +10k acheteurs",
+        "authenticText": "100% Authentique",
+        "featuresTitle": "Pourquoi choisir Collector Shop ?",
+        "featuresDesc": "Une expérience d'achat et de vente sécurisée et transparente.",
+        "feature1Title": "Authenticité Garantie",
+        "feature1Desc": "Chaque objet est vérifié par nos experts avant d'être mis en vente sur notre plateforme.",
+        "feature2Title": "Vente Instantanée",
+        "feature2Desc": "Mettez vos objets en vente en quelques clics et atteignez des milliers de collectionneurs.",
+        "feature3Title": "Paiement Sécurisé",
+        "feature3Desc": "Vos fonds sont en sécurité avec notre système de paiement de pointe et protection acheteur.",
+        "ctaTitle": "Prêt à commencer votre collection ?",
+        "ctaDesc": "Rejoignez la plus grande communauté de collectionneurs aujourd'hui. L'inscription est gratuite et prend moins d'une minute.",
+        "ctaButton": "Créer mon compte"
+    },
+    "Catalog": {
+        "title": "Le Catalogue",
+        "subtitle": "Découvrez des objets uniques, soigneusement sélectionnés",
+        "allCategories": "Toutes les catégories",
+        "errorLoading": "Échec du chargement du catalogue. Veuillez réessayer plus tard.",
+        "loadingText": "À la recherche de trésors...",
+        "errorTitle": "Erreur de chargement",
+        "emptyTitle": "Aucun article disponible",
+        "emptyText": "Le catalogue est temporairement vide. Revenez plus tard ou mettez un article en vente !"
+    },
+    "Profile": {
+        "title": "Mon Espace",
+        "subtitle": "Gérez vos informations, achats et ventes en un seul endroit.",
+        "verified": "Compte vérifié",
+        "notVerified": "Compte non vérifié",
+        "reviews": "avis",
+        "tabs": {
+            "ads": "Mes Annonces",
+            "sales": "Mes Ventes",
+            "purchases": "Mes Achats",
+            "settings": "Paramètres"
+        },
+        "adsSection": {
+            "title": "Mes Annonces",
+            "description": "Gérez vos articles mis en vente et vos annonces en attente.",
+            "sellButton": "Vendre un objet",
+            "emptyTitle": "Aucun article en vente",
+            "emptyText": "Vous n'avez pas encore publié d'annonces.",
+            "createFirst": "Créer ma première annonce",
+            "view": "Voir",
+            "noImage": "Pas d'image"
+        },
+        "salesSection": {
+            "title": "Mes Ventes",
+            "description": "Consultez l'historique de vos ventes.",
+            "empty": "Vous n'avez pas encore vendu d'articles."
+        },
+        "purchasesSection": {
+            "title": "Mes Achats",
+            "description": "Consultez l'historique de vos commandes.",
+            "emptyTitle": "Aucun achat effectué",
+            "emptyText": "Vous n'avez pas encore acheté d'articles.",
+            "explore": "Explorer le catalogue",
+            "boughtFrom": "Acheté à {seller} le {date}",
+            "viewOrder": "Voir la commande"
+        },
+        "settingsSection": {
+            "title": "Informations Personnelles",
+            "description": "Mettez à jour votre profil et vos préférences.",
+            "success": "Profil mis à jour avec succès !",
+            "error": "Une erreur est survenue.",
+            "unexpectedError": "Une erreur inattendue est survenue.",
+            "name": "Nom complet",
+            "image": "Photo de profil",
+            "email": "Email",
+            "emailHint": "L'adresse email ne peut pas modifiée.",
+            "interests": "Centres d'intérêt (Catégories favorites)",
+            "interestsHint": "Sélectionnez les catégories qui vous intéressent pour recevoir des recommandations personnalisées.",
+            "save": "Enregistrer",
+            "updating": "Mise à jour..."
+        }
+    },
+    "Auth": {
+        "login": {
+            "title": "Bienvenue",
+            "description": "Connectez-vous pour accéder à votre espace",
+            "email": "Email",
+            "emailPlaceholder": "nom@exemple.com",
+            "password": "Mot de passe",
+            "passwordPlaceholder": "••••••••",
+            "forgot": "Oublié ?",
+            "submit": "Se connecter",
+            "noAccount": "Vous n'avez pas de compte ?",
+            "register": "Inscription",
+            "errorDefault": "Une erreur est survenue lors de la connexion.",
+            "errorUnexpected": "Une erreur inattendue est survenue."
+        },
+        "register": {
+            "title": "Créer un compte",
+            "description": "Rejoignez l'aventure Collector Shop dès aujourd'hui",
+            "name": "Nom complet",
+            "namePlaceholder": "John Doe",
+            "email": "Email",
+            "emailPlaceholder": "nom@exemple.com",
+            "password": "Mot de passe",
+            "passwordPlaceholder": "••••••••",
+            "submit": "S'inscrire",
+            "haveAccount": "Vous avez déjà un compte ?",
+            "login": "Connexion",
+            "errorDefault": "Une erreur est survenue lors de l'inscription.",
+            "errorUnexpected": "Une erreur inattendue est survenue."
+        }
+    },
+    "Sell": {
+        "trigger": "Vendre un Objet",
+        "title": "Proposer un objet",
+        "description": "Mettez en vente votre objet de collection. Il sera soumis à validation si sa valeur dépasse 1 000 €.",
+        "itemTitle": "Titre de l'objet",
+        "itemTitlePlaceholder": "Ex: Appareil Photo Leica M3",
+        "price": "Prix estimé (€)",
+        "pricePlaceholder": "Ex: 1250.00",
+        "commissionHint": "Une commission de 5% sera appliquée.",
+        "category": "Catégorie",
+        "categoryPlaceholder": "Sélectionnez une catégorie",
+        "descriptionLabel": "Description détaillée",
+        "descriptionPlaceholder": "Décrivez l'état, l'histoire et les particularités de l'objet...",
+        "images": "Photos (optionnel)",
+        "imagesHint": "Sélectionnez plusieurs images pour mieux mettre en valeur votre objet.",
+        "cancel": "Annuler",
+        "submit": "Publier l'objet",
+        "submitting": "Envoi...",
+        "errorFields": "Veuillez remplir tous les champs obligatoires avec des valeurs valides.",
+        "errorUpload": "Erreur lors de l'upload de l'image"
+    },
+    "Common": {
+        "noImage": "Pas d'image",
+        "status": {
+            "sold": "Vendu",
+            "completed": "Terminé",
+            "approved": "Approuvé",
+            "pending": "En attente",
+            "rejected": "Rejeté",
+            "unknown": "Inconnu"
+        },
+        "seller": "Vendeur",
+        "anonymous": "Anonyme",
+        "recommended": "Recommandé pour vous",
+        "confirmDelete": "Êtes-vous sûr de vouloir supprimer définitivement cette annonce ?",
+        "confirmDeleteCategory": "Supprimer cette catégorie ?"
+    },
+    "Messages": {
+        "title": "Messages",
+        "noConversations": "Aucune conversation en cours.",
+        "back": "Retour",
+        "loading": "Chargement...",
+        "typing": "est en train d'écrire...",
+        "send": "Envoyer",
+        "placeholder": "Écrivez votre message...",
+        "contactSeller": "Contacter le vendeur",
+        "newConversation": "Nouvelle conversation",
+        "errorSending": "Erreur lors de l'envoi du message.",
+        "selectConversation": "Sélectionnez une conversation",
+        "about": "A propos de:",
+        "offer": {
+            "title": "Faire une offre",
+            "button": "Faire une offre",
+            "price": "OFFRE: {price} €",
+            "proposed": "Vous avez proposé une offre.",
+            "partnerProposed": "{name} a proposé une offre.",
+            "accepted": "Offre Acceptée 🎉",
+            "rejected": "Offre Refusée",
+            "pending": "En Attente...",
+            "accept": "Accepter",
+            "reject": "Refuser",
+            "payNow": "Payer maintenant {price} €",
+            "dialogTitle": "Faire une offre",
+            "dialogDesc": "Proposez un prix {partner} pour l'objet **{title}**. S'il l'accepte, vous pourrez procéder au paiement.",
+            "amountPlaceholder": "Ex: 45.00",
+            "cancel": "Annuler",
+            "sendOffer": "Envoyer l'offre",
+            "error": "Erreur lors de l'envoi de l'offre.",
+            "invalidAmount": "Montant invalide."
+        },
+        "startPrompt": "Envoyez un message pour démarrer la conversation."
+    },
+    "Product": {
+        "back": "Retour au catalogue",
+        "loading": "Chargement de l'objet...",
+        "errorTitle": "Objet introuvable",
+        "errorDesc": "Oups, impossible de charger cet objet. Il a peut-être été retiré.",
+        "authenticated": "Authentifié",
+        "validating": "En cours de validation",
+        "noImage": "Aucune image disponible",
+        "verifiedSeller": "Vendeur vérifié",
+        "reviews": "{count} avis",
+        "contactSeller": "Contacter le vendeur",
+        "addToCart": "Ajouter au panier",
+        "unavailable": "Indisponible à la vente",
+        "securePurchase": "Achat sécurisé garanti par Collector Shop"
+    },
+    "Admin": {
+        "title": "Panneau d'Administration",
+        "subtitle": "Gérez la modération des annonces et le catalogue.",
+        "tabs": {
+            "pending": "Annonces en attente",
+            "approved": "Catalogue (Approuvé)",
+            "rejected": "Refusées",
+            "users": "Membres",
+            "categories": "Catégories"
+        },
+        "empty": "Aucune annonce trouvée dans cette catégorie.",
+        "table": {
+            "id": "ID",
+            "title": "Titre",
+            "seller": "Vendeur",
+            "price": "Prix",
+            "actions": "Actions",
+            "email": "Email",
+            "name": "Nom",
+            "role": "Rôle",
+            "since": "Depuis",
+            "action": "Action",
+            "slug": "Slug"
+        },
+        "actions": {
+            "approve": "Valider",
+            "reject": "Refuser",
+            "rescue": "Repêcher",
+            "ban": "Bannir",
+            "unban": "Débannir",
+            "add": "Ajouter"
+        },
+        "users": {
+            "title": "Gestion des Membres"
+        },
+        "categories": {
+            "existing": "Catégories existantes",
+            "add": "Ajouter une catégorie",
+            "nameLabel": "Nom de la catégorie",
+            "namePlaceholder": "Livres anciens",
+            "slugLabel": "Identifiant / slug URL",
+            "slugPlaceholder": "livres-anciens"
+        },
+        "toast": {
+            "approved": "Annonce approuvée avec succès !",
+            "rejected": "Annonce rejetée avec succès !",
+            "errorUpdate": "Erreur lors de la mise à jour de l'annonce.",
+            "deleted": "Annonce supprimée avec succès.",
+            "errorDelete": "Erreur lors de la suppression de l'annonce.",
+            "unbanned": "Utilisateur débanni avec succès.",
+            "banned": "Utilisateur banni.",
+            "errorBan": "Erreur lors de la modification du statut du membre.",
+            "catAdded": "Catégorie ajoutée.",
+            "errorCatAdd": "Erreur lors de l'ajout de la catégorie.",
+            "catDeleted": "Catégorie supprimée.",
+            "errorCatDelete": "Impossible de supprimer la catégorie (elle contient peut-être des annonces)."
+        }
+    },
+    "UserProfile": {
+        "memberSince": "Membre depuis {year}",
+        "sales": "{count} ventes",
+        "reviewsSummary": "{average}/5 ({count} avis)",
+        "tabs": {
+            "annonces": "Annonces ({count})",
+            "avis": "Avis reçus ({count})"
+        },
+        "emptyAds": "Aucune annonce en cours",
+        "noReviews": "Cet utilisateur n'a pas encore reçu d'avis.",
+        "receivedReviews": "Avis reçus",
+        "receivedReviewsDesc": "Découvrez ce que les autres membres pensent de {name}.",
+        "error": "Impossible de charger le profil de cet utilisateur.",
+        "notFound": "Utilisateur introuvable."
+    }
+}

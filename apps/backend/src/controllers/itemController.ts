@@ -18,7 +18,7 @@ export class ItemController {
                 return;
             }
 
-            const { title, description, price, images } = req.body;
+            const { title, description, price, images, categoryId } = req.body;
 
             // Validate input
             if (!title || !description || typeof price !== "number") {
@@ -27,7 +27,7 @@ export class ItemController {
             }
 
             const sellerId = req.user.id;
-            const newItem = await ItemService.createItem(title, description, price, sellerId, images || []);
+            const newItem = await ItemService.createItem(title, description, price, sellerId, images || [], categoryId);
 
             console.log(`[ItemController] Created Item: ${newItem.id} with status ${newItem.status}`);
 
@@ -47,14 +47,18 @@ export class ItemController {
      */
     static async getAll(req: Request, res: Response): Promise<void> {
         try {
-            let statusQuery = req.query.status as ItemStatusType | undefined;
+            const status = req.query.status as string | undefined;
+            const sellerIdQuery = req.query.sellerId as string | undefined;
+            const categoryIdQuery = req.query.categoryId as string | undefined;
+            let statusQuery = status?.split("|") as ItemStatusType[] | undefined;
 
             // Check session to see if Admin
             let isAdmin = false;
+            let currentUserId = null;
             try {
                 const session = await auth.api.getSession({ headers: req.headers });
-                console.log("[ItemController] Session:", session);
                 if (session && session.user) {
+                    currentUserId = session.user.id;
                     const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
                     if (dbUser?.role === "ADMIN") {
                         isAdmin = true;
@@ -64,14 +68,17 @@ export class ItemController {
                 // Ignore session fetch errors
             }
 
-            // Public users only see APPROVED items. If no status is specified, default to APPROVED for public users.
+            // Public users only see APPROVED items. 
+            // EXCEPT: If the requested sellerId matches the currently logged in user, they can see all their items.
             if (!isAdmin) {
-                statusQuery = "APPROVED"; // Force APPROVED if not admin
+                if (sellerIdQuery && sellerIdQuery === currentUserId) {
+                    // Let them see all their own items regardless of status
+                } else {
+                    statusQuery = ["APPROVED"]; // Force APPROVED if looking at others
+                }
             }
 
-            console.log("[ItemController] Status Query:", statusQuery);
-
-            const items = await ItemService.getItems(statusQuery);
+            const items = await ItemService.getItems(statusQuery, sellerIdQuery, categoryIdQuery);
             res.status(200).json({ data: items });
         } catch (error) {
             console.error("[ItemController] GetAll Error:", error);

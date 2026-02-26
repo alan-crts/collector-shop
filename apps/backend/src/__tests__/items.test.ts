@@ -1,10 +1,17 @@
 import { ItemController } from "../controllers/itemController.js";
 import { ItemService } from "../services/itemService.js";
 import { createRequest, createResponse } from "node-mocks-http";
-import { jest, describe, it, expect, afterEach } from "@jest/globals";
+import { jest, describe, it, expect, afterEach, beforeEach } from "@jest/globals";
 
 // We spy on the service so no DB calls are actually made
+import prisma from "../lib/prisma.js";
+
 describe("ItemController CRUD Operations", () => {
+    beforeEach(() => {
+        // Mock Prisma to prevent database hits during admin checks
+        jest.spyOn(prisma.user, "findUnique").mockResolvedValue({ role: "USER" } as any);
+    });
+
     afterEach(() => {
         jest.restoreAllMocks();
     });
@@ -35,7 +42,7 @@ describe("ItemController CRUD Operations", () => {
                     sellerId: "seller1",
                     images: ["test.jpg"],
                     commissionFee: 25,
-                });
+                } as any);
 
             const req = createRequest({
                 method: "POST",
@@ -75,7 +82,7 @@ describe("ItemController CRUD Operations", () => {
             jest.spyOn(ItemService, "getItems").mockResolvedValueOnce([
                 { id: "item1", title: "Card 1", description: "", price: 0, status: "APPROVED", sellerId: "", images: [] },
                 { id: "item2", title: "Card 2", description: "", price: 0, status: "PENDING", sellerId: "", images: [] }
-            ]);
+            ] as any);
 
             const req = createRequest({ method: "GET", url: "/api/items" });
             const res = createResponse();
@@ -103,7 +110,7 @@ describe("ItemController CRUD Operations", () => {
         it("should return item if found", async () => {
             jest.spyOn(ItemService, "getItemById").mockResolvedValueOnce({
                 id: "item1", title: "Card 1", description: "", price: 0, status: "APPROVED", sellerId: "", images: []
-            });
+            } as any);
 
             const req = createRequest({ method: "GET", url: "/api/items/item1", params: { id: "item1" } });
             const res = createResponse();
@@ -137,7 +144,7 @@ describe("ItemController CRUD Operations", () => {
         it("should update item and return 200", async () => {
             jest.spyOn(ItemService, "updateItem").mockResolvedValueOnce({
                 id: "item1", title: "Updated", description: "", price: 0, status: "APPROVED", sellerId: "", images: []
-            });
+            } as any);
 
             const req = createRequest({
                 method: "PUT",

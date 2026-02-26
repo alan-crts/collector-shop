@@ -2,23 +2,25 @@ import { Item } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCircle2, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 interface ItemCardProps {
   item: Item;
 }
 
 export function ItemCard({ item }: ItemCardProps) {
+  const t = useTranslations("Common");
   const getStatusBadge = (status: Item["status"]) => {
     switch (status) {
       case "APPROVED":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">Approuvé</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">{t("status.approved")}</Badge>;
       case "PENDING":
-        return <Badge className="bg-amber-600 hover:bg-amber-700 text-white">En attente</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-700 text-white">{t("status.pending")}</Badge>;
       case "REJECTED":
-        return <Badge variant="destructive">Rejeté</Badge>;
+        return <Badge variant="destructive">{t("status.rejected")}</Badge>;
       default:
-        return <Badge variant="secondary">Inconnu</Badge>;
+        return <Badge variant="secondary">{t("status.unknown")}</Badge>;
     }
   };
 
@@ -69,7 +71,7 @@ export function ItemCard({ item }: ItemCardProps) {
             ) : (
               <UserCircle2 className="w-6 h-6 opacity-70" />
             )}
-            <span className="truncate max-w-[120px]">Vendeur: {item.seller?.name || "Anonyme"}</span>
+            <span className="truncate max-w-[120px]">{t("seller")}: {item.seller?.name || t("anonymous")}</span>
           </div>
           
           <ArrowRight className="w-4 h-4 text-primary opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" />

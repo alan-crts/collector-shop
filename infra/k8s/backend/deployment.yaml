@@ -38,6 +38,14 @@ spec:
               cpu: "1000m"
           ports:
             - containerPort: 8000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: BETTER_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: BETTER_AUTH_BASE_URL
           envFrom:
             - secretRef:
                 name: backend-secret

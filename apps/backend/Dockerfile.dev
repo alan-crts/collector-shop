@@ -10,7 +10,7 @@ RUN npm install
 COPY . .
 
 # Generate Prisma client (standard location node_modules)
-RUN npx prisma generate
+RUN npx prisma@6.3.1 generate
 
 # Expose backend port
 EXPOSE 8000

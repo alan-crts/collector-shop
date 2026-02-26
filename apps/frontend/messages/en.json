@@ -1,0 +1,292 @@
+{
+    "Navigation": {
+        "home": "Home",
+        "catalog": "Catalog",
+        "categories": "Categories",
+        "sell": "Sell",
+        "login": "Login",
+        "register": "Sign Up",
+        "profile": "Profile",
+        "admin": "Admin",
+        "logout": "Logout",
+        "messages": "Messages",
+        "language": "Language",
+        "notifications": "Notifications",
+        "loading": "Loading...",
+        "noNotifications": "No notifications."
+    },
+    "Home": {
+        "newCollection Badge": "New 2026 Collection has arrived",
+        "heroTitle1": "Collect the Exceptional",
+        "heroTitle2": "Collector Shop",
+        "heroDesc": "The number one destination for passionate collectors. Discover unique, authenticated, and rare pieces from all over the world.",
+        "exploreButton": "Explore Items",
+        "sellButton": "Sell an Item",
+        "ratingText": "4.9/5 by +10k buyers",
+        "authenticText": "100% Authentic",
+        "featuresTitle": "Why choose Collector Shop?",
+        "featuresDesc": "A secure and transparent buying and selling experience.",
+        "feature1Title": "Guaranteed Authenticity",
+        "feature1Desc": "Every item is verified by our experts before being sold on our platform.",
+        "feature2Title": "Instant Selling",
+        "feature2Desc": "List your items in a few clicks and reach thousands of collectors.",
+        "feature3Title": "Secure Payment",
+        "feature3Desc": "Your funds are safe with our cut-edge payment system and buyer protection.",
+        "ctaTitle": "Ready to start your collection?",
+        "ctaDesc": "Join the largest community of collectors today. Registration is free and takes less than a minute.",
+        "ctaButton": "Create my account"
+    },
+    "Catalog": {
+        "title": "The Catalog",
+        "subtitle": "Discover unique, meticulously selected items",
+        "allCategories": "All Categories",
+        "errorLoading": "Failed to load the catalog. Please try again later.",
+        "loadingText": "Searching for treasures...",
+        "errorTitle": "Loading Error",
+        "emptyTitle": "No items available",
+        "emptyText": "The catalog is temporarily empty. Check back later or list an item for sale!"
+    },
+    "Profile": {
+        "title": "My Space",
+        "subtitle": "Manage your information, purchases and sales in one place.",
+        "verified": "Verified account",
+        "notVerified": "Unverified account",
+        "reviews": "reviews",
+        "tabs": {
+            "ads": "My Ads",
+            "sales": "My Sales",
+            "purchases": "My Purchases",
+            "settings": "Settings"
+        },
+        "adsSection": {
+            "title": "My Ads",
+            "description": "Manage your items for sale and pending ads.",
+            "sellButton": "Sell an object",
+            "emptyTitle": "No items for sale",
+            "emptyText": "You haven't published any ads yet.",
+            "createFirst": "Create my first ad",
+            "view": "View",
+            "noImage": "No image"
+        },
+        "salesSection": {
+            "title": "My Sales",
+            "description": "View your sales history.",
+            "empty": "You haven't sold any items yet."
+        },
+        "purchasesSection": {
+            "title": "My Purchases",
+            "description": "View your order history.",
+            "emptyTitle": "No purchases made",
+            "emptyText": "You haven't bought any items yet.",
+            "explore": "Explore the catalog",
+            "boughtFrom": "Bought from {seller} on {date}",
+            "viewOrder": "View order"
+        },
+        "settingsSection": {
+            "title": "Personal Information",
+            "description": "Update your profile and preferences.",
+            "success": "Profile updated successfully!",
+            "error": "An error occurred.",
+            "unexpectedError": "An unexpected error occurred.",
+            "name": "Full name",
+            "image": "Profile picture",
+            "email": "Email",
+            "emailHint": "Email address cannot be changed.",
+            "interests": "Interests (Favorite categories)",
+            "interestsHint": "Select categories you're interested in to receive personalized recommendations.",
+            "save": "Save",
+            "updating": "Updating..."
+        }
+    },
+    "Auth": {
+        "login": {
+            "title": "Welcome",
+            "description": "Sign in to access your space",
+            "email": "Email",
+            "emailPlaceholder": "name@example.com",
+            "password": "Password",
+            "passwordPlaceholder": "••••••••",
+            "forgot": "Forgot?",
+            "submit": "Sign In",
+            "noAccount": "Don't have an account?",
+            "register": "Sign Up",
+            "errorDefault": "An error occurred during sign in.",
+            "errorUnexpected": "An unexpected error occurred."
+        },
+        "register": {
+            "title": "Create an account",
+            "description": "Join the Collector Shop adventure today",
+            "name": "Full name",
+            "namePlaceholder": "John Doe",
+            "email": "Email",
+            "emailPlaceholder": "name@example.com",
+            "password": "Password",
+            "passwordPlaceholder": "••••••••",
+            "submit": "Sign Up",
+            "haveAccount": "Already have an account?",
+            "login": "Login",
+            "errorDefault": "An error occurred during registration.",
+            "errorUnexpected": "An unexpected error occurred."
+        }
+    },
+    "Sell": {
+        "trigger": "Sell an Item",
+        "title": "Propose an item",
+        "description": "List your collector item for sale. It will be subject to validation if its value exceeds €1,000.",
+        "itemTitle": "Item title",
+        "itemTitlePlaceholder": "Ex: Leica M3 Camera",
+        "price": "Estimated price (€)",
+        "pricePlaceholder": "Ex: 1250.00",
+        "commissionHint": "A 5% commission will be applied.",
+        "category": "Category",
+        "categoryPlaceholder": "Select a category",
+        "descriptionLabel": "Detailed description",
+        "descriptionPlaceholder": "Describe the condition, history and features of the item...",
+        "images": "Photos (optional)",
+        "imagesHint": "Select multiple images to better showcase your item.",
+        "cancel": "Cancel",
+        "submit": "Publish item",
+        "submitting": "Sending...",
+        "errorFields": "Please fill in all required fields with valid values.",
+        "errorUpload": "Error uploading image"
+    },
+    "Common": {
+        "status": {
+            "sold": "Sold",
+            "completed": "Completed",
+            "approved": "Approved",
+            "pending": "Pending",
+            "rejected": "Rejected",
+            "unknown": "Unknown"
+        },
+        "noImage": "No image",
+        "seller": "Seller",
+        "anonymous": "Anonymous",
+        "recommended": "Recommended for you",
+        "confirmDelete": "Are you sure you want to permanently delete this ad?",
+        "confirmDeleteCategory": "Delete this category?"
+    },
+    "Messages": {
+        "title": "Messages",
+        "noConversations": "No ongoing conversations.",
+        "back": "Back",
+        "loading": "Loading...",
+        "typing": "is typing...",
+        "send": "Send",
+        "placeholder": "Write your message...",
+        "contactSeller": "Contact Seller",
+        "newConversation": "New conversation",
+        "errorSending": "Error sending message.",
+        "selectConversation": "Select a conversation",
+        "about": "About:",
+        "offer": {
+            "title": "Make an offer",
+            "button": "Make an offer",
+            "price": "OFFER: {price} €",
+            "proposed": "You proposed an offer.",
+            "partnerProposed": "{name} proposed an offer.",
+            "accepted": "Offer Accepted 🎉",
+            "rejected": "Offer Rejected",
+            "pending": "Pending...",
+            "accept": "Accept",
+            "reject": "Reject",
+            "payNow": "Pay now {price} €",
+            "dialogTitle": "Make an offer",
+            "dialogDesc": "Propose a price to the {partner} for the item **{title}**. If they accept, you can proceed to payment.",
+            "amountPlaceholder": "Ex: 45.00",
+            "cancel": "Cancel",
+            "sendOffer": "Send offer",
+            "error": "Error sending offer.",
+            "invalidAmount": "Invalid amount."
+        },
+        "startPrompt": "Send a message to start the conversation."
+    },
+    "Product": {
+        "back": "Back to catalog",
+        "loading": "Loading item...",
+        "errorTitle": "Item not found",
+        "errorDesc": "Oops, unable to load this item. It may have been removed.",
+        "authenticated": "Authenticated",
+        "validating": "Under validation",
+        "noImage": "No image available",
+        "verifiedSeller": "Verified Seller",
+        "reviews": "{count} reviews",
+        "contactSeller": "Contact Seller",
+        "addToCart": "Add to cart",
+        "unavailable": "Unavailable for sale",
+        "securePurchase": "Secure purchase guaranteed by Collector Shop"
+    },
+    "Admin": {
+        "title": "Admin Dashboard",
+        "subtitle": "Manage ad moderation and the catalog.",
+        "tabs": {
+            "pending": "Pending Ads",
+            "approved": "Catalog (Approved)",
+            "rejected": "Rejected",
+            "users": "Members",
+            "categories": "Categories"
+        },
+        "empty": "No ads found in this category.",
+        "table": {
+            "id": "ID",
+            "title": "Title",
+            "seller": "Seller",
+            "price": "Price",
+            "actions": "Actions",
+            "email": "Email",
+            "name": "Name",
+            "role": "Role",
+            "since": "Since",
+            "action": "Action",
+            "slug": "Slug"
+        },
+        "actions": {
+            "approve": "Approve",
+            "reject": "Reject",
+            "rescue": "Rescue",
+            "ban": "Ban",
+            "unban": "Unban",
+            "add": "Add"
+        },
+        "users": {
+            "title": "Member Management"
+        },
+        "categories": {
+            "existing": "Existing categories",
+            "add": "Add a category",
+            "nameLabel": "Category name",
+            "namePlaceholder": "Antique books",
+            "slugLabel": "Identifier / URL slug",
+            "slugPlaceholder": "antique-books"
+        },
+        "toast": {
+            "approved": "Ad approved successfully!",
+            "rejected": "Ad rejected successfully!",
+            "errorUpdate": "Error updating the ad.",
+            "deleted": "Ad deleted successfully.",
+            "errorDelete": "Error deleting the ad.",
+            "unbanned": "User unbanned successfully.",
+            "banned": "User banned.",
+            "errorBan": "Error modification member status.",
+            "catAdded": "Category added.",
+            "errorCatAdd": "Error adding category.",
+            "catDeleted": "Category deleted.",
+            "errorCatDelete": "Unable to delete category (it may contain ads)."
+        }
+    },
+    "UserProfile": {
+        "memberSince": "Member since {year}",
+        "sales": "{count} sales",
+        "reviewsSummary": "{average}/5 ({count} reviews)",
+        "tabs": {
+            "annonces": "Ads ({count})",
+            "avis": "Reviews Received ({count})"
+        },
+        "emptyAds": "No ongoing ads",
+        "noReviews": "This user hasn't received any reviews yet.",
+        "receivedReviews": "Reviews received",
+        "receivedReviewsDesc": "See what other members think of {name}.",
+        "error": "Unable to load this user's profile.",
+        "notFound": "User not found."
+    }
+}

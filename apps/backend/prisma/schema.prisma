@@ -21,6 +21,7 @@ model User {
   name          String
   emailVerified Boolean  @default(false)
   image         String?
+  isBanned      Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -87,6 +88,8 @@ model Transaction {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
+  reviews         Review[]
+
   @@map("transaction")
 }
 
@@ -94,18 +97,25 @@ model Review {
   id         String   @id @default(cuid())
   rating     Int
   comment    String?
-  reviewerId String
-  reviewer   User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
-  revieweeId String
-  reviewee   User     @relation("Reviewee", fields: [revieweeId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  reviewerId    String
+  reviewer      User         @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  revieweeId    String
+  reviewee      User         @relation("Reviewee", fields: [revieweeId], references: [id], onDelete: Cascade)
+  transactionId String?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
 
+  @@unique([reviewerId, transactionId])
   @@map("review")
 }
 
 model Message {
-  id         String   @id @default(cuid())
-  content    String
+  id          String       @id @default(cuid())
+  type        MessageType  @default(TEXT)
+  content     String
+  offerPrice  Float? // Only valid if type is OFFER
+  offerStatus OfferStatus? // PENDING, ACCEPTED, REJECTED
+
   senderId   String
   sender     User     @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
@@ -204,4 +214,15 @@ enum NotificationType {
   ORDER_STATUS
   MESSAGE
   SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  OFFER
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }

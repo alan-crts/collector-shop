@@ -19,6 +19,16 @@ export class ItemService {
     }
 
     /**
+     * Identifies emails or phone numbers inside descriptions/titles
+     */
+    static hasRestrictedContent(text: string): boolean {
+        if (!text) return false;
+        const emailRegex = /[\w.-]+@[\w.-]+\.\w+/i;
+        const phoneRegex = /(\+33|0)[1-9](\s?\d{2}){4}/;
+        return emailRegex.test(text) || phoneRegex.test(text);
+    }
+
+    /**
      * Create a new item
      */
     static async createItem(
@@ -26,8 +36,13 @@ export class ItemService {
         description: string,
         price: number,
         sellerId: string,
-        images: string[] = []
+        images: string[] = [],
+        categoryId?: string
     ): Promise<Item & { commissionFee: number }> {
+        if (this.hasRestrictedContent(title) || this.hasRestrictedContent(description)) {
+            throw new Error("Validation Error: Emails and phone numbers are not allowed in item listings.");
+        }
+
         const status = this.determineInitialStatus(price);
         const commissionFee = this.calculateCommission(price);
 
@@ -38,6 +53,7 @@ export class ItemService {
                 price,
                 status,
                 sellerId,
+                categoryId: categoryId || null,
                 images,
             },
         });
@@ -46,10 +62,14 @@ export class ItemService {
     }
 
     /**
-     * Get all items (can be extended with pagination/filtering)
+     * Get all items (can be extended with pagination/filtering) allow multiple status
      */
-    static async getItems(status?: ItemStatusType): Promise<Item[]> {
-        const whereClause = status ? { status } : {};
+    static async getItems(status?: ItemStatusType[], sellerId?: string, categoryId?: string): Promise<Item[]> {
+        const whereClause: any = {};
+        if (status) whereClause.status = { in: status };
+        if (sellerId) whereClause.sellerId = sellerId;
+        if (categoryId) whereClause.categoryId = categoryId;
+
         return prisma.item.findMany({
             where: whereClause,
             include: {
@@ -80,6 +100,13 @@ export class ItemService {
         data: { title?: string; description?: string; price?: number; images?: string[]; status?: ItemStatusType },
         isAdmin: boolean = false
     ): Promise<(Item & { commissionFee?: number }) | null> {
+        if (data.title && this.hasRestrictedContent(data.title)) {
+            throw new Error("Validation Error: Emails and phone numbers are not allowed in item listings.");
+        }
+        if (data.description && this.hasRestrictedContent(data.description)) {
+            throw new Error("Validation Error: Emails and phone numbers are not allowed in item listings.");
+        }
+
         // Verify ownership
         const existingItem = await prisma.item.findUnique({ where: { id } });
         if (!existingItem) {
