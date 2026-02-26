@@ -4,11 +4,12 @@ MINIKUBE_CPUS ?= 4
 MINIKUBE_MEMORY ?= 8192
 TERRAFORM_DIR = terraform
 
-.PHONY: help start stop install-argocd deploy port-forward clean status seal grafana-pass stripe-login stripe-listen
+.PHONY: help up start stop install-argocd deploy port-forward clean status seal get-cert grafana-pass stripe-login stripe-listen
 
 # Affiche l'aide
 help:
 	@echo "🛠️  Infrastructure Collector Shop Commandes :"
+	@echo "  make up             - 🔥 Démarre TOUT l'environnement (start + hosts + argocd + deploy)"
 	@echo "  make start          - Démarre minikube avec l'addon ingress"
 	@echo "  make stop           - Arrête minikube"
 	@echo "  make install-argocd - Initialise et applique Terraform pour installer ArgoCD"
@@ -21,6 +22,11 @@ help:
 	@echo "  make stripe-listen  - Redirige les événements Stripe vers le webhook local"
 	@echo "  make grafana-pass   - Affiche les identifiants pour se connecter à Grafana"
 	@echo "  make clean          - (!DANGER!) Détruit minikube et supprime l'état Terraform"
+
+# Monter toute l'infrastructure
+up: start hosts install-argocd get-cert seal deploy
+	@echo "🚀 L'infrastructure est en completement opérationnelle !"
+	@echo "Utilisez 'make port-forward' pour accéder à ArgoCD."
 
 # Démarrer le cluster
 start:
@@ -65,7 +71,7 @@ install-argocd:
 deploy:
 	@echo "🚢 Déploiement de l'Application ArgoCD (GitOps)..."
 	kubectl apply -f argo/application.yaml
-	@echo "Toutes vos ressources dans infra/k8s vont être synchronisées depuis Github !"
+	@echo "Ressources synchronisées. Les secrets locaux ont déjà été appliqués."
 
 # Redirection de port pour ArgoCD
 port-forward:
@@ -92,8 +98,19 @@ seal:
 		dir=$$(dirname $$secret); \
 		echo "🔐 \033[36m$$secret\033[0m -> \033[32m$$dir/sealed-secret.yaml\033[0m"; \
 		kubeseal --format=yaml --cert=kubeseal-cert.crt < $$secret > $$dir/sealed-secret.yaml; \
+		kubectl apply -f $$dir/sealed-secret.yaml; \
+		rm $$secret; \
 	done
-	@echo "✅ Chiffrement terminé. Vous pouvez maintenant supprimer vos anciens fichiers secret.yaml !"
+	@echo "✅ Chiffrement terminé. Fichiers secret.yaml supprimés pour la sécurité."
+
+# Récupérer le certificat du contrôleur Sealed Secrets
+get-cert:
+	@echo "🔍 Récupération du certificat Sealed Secrets (attente du pod...)"
+	@kubectl -n kube-system wait --for=condition=ready pod -l app.kubernetes.io/name=sealed-secrets --timeout=120s
+	@kubeseal --fetch-cert \
+		--controller-name=sealed-secrets-controller \
+		--controller-namespace=kube-system > kubeseal-cert.crt
+	@echo "✅ Certificat récupéré dans kubeseal-cert.crt"
 
 # Obtenir les identifiants Grafana
 grafana-pass:
