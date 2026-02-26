@@ -8,6 +8,8 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 const app = express();
 const port = 8000;
 
+app.set("trust proxy", true);
+
 app.use(cors({
     origin: [
         process.env.FRONTEND_URL || "http://localhost:3000",

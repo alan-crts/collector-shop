@@ -24,4 +24,9 @@ export const auth = betterAuth({
         process.env.FRONTEND_URL || "http://localhost:3000",
         process.env.BETTER_AUTH_BASE_URL || "http://localhost:8000",
     ],
+    advanced: {
+        cookieOptions: {
+            domain: ".collector-shop.local",
+        },
+    },
 });
