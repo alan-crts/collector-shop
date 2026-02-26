@@ -94,6 +94,6 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           build-args: |
-            NEXT_PUBLIC_API_URL=http://api.collector-shop.local
+            NEXT_PUBLIC_API_URL=https://api.collector-shop.local
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
