@@ -6,25 +6,67 @@ import { auth } from "../lib/auth.js";
 import * as socketUtils from "../lib/socket.js";
 import { PaymentService } from "../services/paymentService.js";
 
+// ─── Global test state created once for all suites ───────────────────────────
+let adminId: string;
+let sellerId: string;
+let buyerId: string;
+let categoryId: string;
+
 describe("API Integration Tests", () => {
-    let sellerId: string;
 
     beforeAll(async () => {
         await prisma.$connect();
+
         // Initialize Socket.io with a dummy server to avoid "not initialized" errors
         const { createServer } = await import("http");
         const dummyServer = createServer();
         socketUtils.initSocket(dummyServer);
+
+        // ── Ensure a category exists ──────────────────────────────────────────
+        let category = await prisma.category.findFirst();
+        if (!category) {
+            category = await prisma.category.create({
+                data: { name: "Test Category", slug: "test-category" }
+            });
+        }
+        categoryId = category.id;
+
+        // ── Ensure an ADMIN user exists ───────────────────────────────────────
+        let admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+        if (!admin) {
+            admin = await prisma.user.create({
+                data: { email: "ci_admin@test.com", name: "CI Admin", role: "ADMIN" }
+            });
+        }
+        adminId = admin.id;
+
+        // ── Ensure a SELLER user exists ───────────────────────────────────────
+        let seller = await prisma.user.findFirst({ where: { role: "SELLER" } });
+        if (!seller) {
+            seller = await prisma.user.create({
+                data: { email: "ci_seller@test.com", name: "CI Seller", role: "SELLER" }
+            });
+        }
+        sellerId = seller.id;
+
+        // ── Ensure a BUYER user exists ────────────────────────────────────────
+        let buyer = await prisma.user.findFirst({ where: { role: "BUYER" } });
+        if (!buyer) {
+            buyer = await prisma.user.create({
+                data: { email: "ci_buyer@test.com", name: "CI Buyer", role: "BUYER" }
+            });
+        }
+        buyerId = buyer.id;
     });
 
     afterAll(async () => {
         await prisma.$disconnect();
     });
 
+    // ── Categories ──────────────────────────────────────────────────────────────
     describe("GET /api/categories", () => {
         it("should return a list of categories", async () => {
             const res = await request(app).get("/api/categories");
-
             expect(res.status).toBe(200);
             expect(Array.isArray(res.body)).toBe(true);
             if (res.body.length > 0) {
@@ -34,29 +76,19 @@ describe("API Integration Tests", () => {
         });
     });
 
+    // ── Items API ───────────────────────────────────────────────────────────────
     describe("Items API", () => {
         let itemId: string;
 
         beforeAll(async () => {
-            const user = await prisma.user.findFirst({ where: { role: "SELLER" } });
-            sellerId = user?.id || "";
-
-            // Ensure the user actually has the SELLER role in the database for the middleware check
-            if (user && user.role !== "SELLER") {
-                await prisma.user.update({
-                    where: { id: user.id },
-                    data: { role: "SELLER" }
-                });
-            }
-
-            const category = await prisma.category.findFirst();
+            // Create a test item to use for read/update/delete tests
             const item = await prisma.item.create({
                 data: {
                     title: "CRUD Test Item",
                     description: "Original description",
                     price: 100,
                     sellerId: sellerId,
-                    categoryId: category?.id || ""
+                    categoryId: categoryId
                 }
             });
             itemId = item.id;
@@ -93,9 +125,6 @@ describe("API Integration Tests", () => {
                     description: "Updated description"
                 });
 
-            if (res.status !== 200) {
-                console.log("Update Item Failed Body:", res.body);
-            }
             expect(res.status).toBe(200);
             expect(res.body.data.title).toBe("Updated Item Name");
             jest.restoreAllMocks();
@@ -121,9 +150,6 @@ describe("API Integration Tests", () => {
             } as any);
 
             const res = await request(app).delete(`/api/items/${itemId}`);
-            if (res.status !== 204) {
-                console.log("Delete Item Failed Body:", res.body);
-            }
             expect(res.status).toBe(204);
 
             const check = await prisma.item.findUnique({ where: { id: itemId } });
@@ -132,12 +158,13 @@ describe("API Integration Tests", () => {
         });
     });
 
+    // ── Authentication Middleware & Errors ──────────────────────────────────────
     describe("Authentication Middleware & Errors", () => {
         it("should return 401 when trying to create an item without token", async () => {
             const res = await request(app)
                 .post("/api/items")
                 .send({
-                    title: "Intégration Test Item",
+                    title: "Integration Test Item",
                     description: "Test description",
                     price: 100,
                     images: []
@@ -161,73 +188,46 @@ describe("API Integration Tests", () => {
         });
     });
 
+    // ── Messaging API ───────────────────────────────────────────────────────────
     describe("Messaging API (US-002)", () => {
-        let senderId: string;
-        let receiverId: string;
-
-        beforeAll(async () => {
-            const users = await prisma.user.findMany({ take: 2, select: { id: true } });
-            if (users.length < 2) {
-                // Create dummy users if not enough
-                const u1 = await prisma.user.create({ data: { email: "test_sender@example.com", name: "Sender" } });
-                const u2 = await prisma.user.create({ data: { email: "test_receiver@example.com", name: "Receiver" } });
-                senderId = u1.id;
-                receiverId = u2.id;
-            } else {
-                senderId = users[0]!.id;
-                receiverId = users[1]!.id;
-            }
-        });
-
         it("should allow an authenticated user to send a message", async () => {
             const spy = jest.spyOn(auth.api, "getSession").mockResolvedValue({
-                user: { id: senderId, email: "test_sender@example.com", role: "BUYER" },
+                user: { id: buyerId, email: "ci_buyer@test.com", role: "BUYER" },
                 session: { id: "test-session", expiresAt: new Date(Date.now() + 1000 * 60) }
             } as any);
 
             const res = await request(app)
                 .post("/api/messages")
                 .send({
-                    receiverId: receiverId,
+                    receiverId: sellerId,
                     content: "Hello, is this item still available?"
                 });
 
             expect(res.status).toBe(201);
             expect(res.body.data).toHaveProperty("content", "Hello, is this item still available?");
-            expect(res.body.data).toHaveProperty("receiverId", receiverId);
-            expect(res.body.data).toHaveProperty("senderId", senderId);
+            expect(res.body.data).toHaveProperty("receiverId", sellerId);
+            expect(res.body.data).toHaveProperty("senderId", buyerId);
 
             spy.mockRestore();
         });
 
         it("should return 400 if content is empty", async () => {
             jest.spyOn(auth.api, "getSession").mockResolvedValue({
-                user: { id: senderId },
+                user: { id: buyerId },
                 session: {}
             } as any);
 
             const res = await request(app)
                 .post("/api/messages")
-                .send({
-                    receiverId: receiverId,
-                    content: ""
-                });
+                .send({ receiverId: sellerId, content: "" });
 
             expect(res.status).toBe(400);
             jest.restoreAllMocks();
         });
     });
+
+    // ── Admin API ───────────────────────────────────────────────────────────────
     describe("Admin API", () => {
-        let adminId: string;
-        let userId: string;
-
-        beforeAll(async () => {
-            const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
-            const user = await prisma.user.findFirst({ where: { role: "BUYER" } });
-            adminId = admin?.id || "";
-            userId = user?.id || "";
-        });
-
         it("should allow an admin to list users", async () => {
             jest.spyOn(auth.api, "getSession").mockResolvedValue({
                 user: { id: adminId, role: "ADMIN" },
@@ -242,7 +242,7 @@ describe("API Integration Tests", () => {
 
         it("should forbid non-admins from accessing admin routes", async () => {
             jest.spyOn(auth.api, "getSession").mockResolvedValue({
-                user: { id: userId, role: "BUYER" },
+                user: { id: buyerId, role: "BUYER" },
                 session: {}
             } as any);
 
@@ -252,34 +252,28 @@ describe("API Integration Tests", () => {
         });
     });
 
+    // ── Reviews API ─────────────────────────────────────────────────────────────
     describe("Reviews API", () => {
-        let buyerId: string;
-        let sellerId: string;
         let transactionId: string;
 
         beforeAll(async () => {
-            const buyer = await prisma.user.findFirst({ where: { role: "BUYER" } });
-            const seller = await prisma.user.findFirst({ where: { role: "SELLER" } });
-            buyerId = buyer?.id || "";
-            sellerId = seller?.id || "";
-
-            // Find or create a COMPLETED transaction for testing
-            let transaction = await prisma.transaction.findFirst({
-                where: { status: "COMPLETED" }
+            // Create a test item for the transaction
+            const item = await prisma.item.create({
+                data: {
+                    title: "Review Test Item",
+                    description: "Test description for review",
+                    price: 50,
+                    sellerId: sellerId,
+                    categoryId: categoryId
+                }
             });
 
-            if (!transaction && buyerId && sellerId) {
-                // Create a dummy item if needed
-                const item = await prisma.item.create({
-                    data: {
-                        title: "Review Test Item",
-                        description: "Test description for review",
-                        price: 50,
-                        sellerId: sellerId,
-                        categoryId: (await prisma.category.findFirst())?.id || ""
-                    }
-                });
+            // Find or create a COMPLETED transaction
+            let transaction = await prisma.transaction.findFirst({
+                where: { status: "COMPLETED", buyerId: buyerId, sellerId: sellerId }
+            });
 
+            if (!transaction) {
                 transaction = await prisma.transaction.create({
                     data: {
                         buyerId: buyerId,
@@ -292,14 +286,10 @@ describe("API Integration Tests", () => {
                 });
             }
 
-            // Cleanup any existing reviews for this transaction to avoid "already reviewed" error
-            if (transaction) {
-                await prisma.review.deleteMany({
-                    where: { transactionId: transaction.id }
-                });
-            }
+            // Clean up any existing review for this transaction to avoid "already reviewed" error
+            await prisma.review.deleteMany({ where: { transactionId: transaction.id } });
 
-            transactionId = transaction?.id || "";
+            transactionId = transaction.id;
         });
 
         it("should return reviews for a specific user", async () => {
@@ -312,25 +302,18 @@ describe("API Integration Tests", () => {
         it("should allow creating a review if authenticated", async () => {
             if (!transactionId) return;
 
-            // Fetch the transaction to get the real participants
-            const tx = await prisma.transaction.findUnique({
-                where: { id: transactionId }
-            });
-
-            if (!tx) return;
-
             jest.spyOn(auth.api, "getSession").mockResolvedValue({
-                user: { id: tx.buyerId },
+                user: { id: buyerId },
                 session: {}
             } as any);
 
             const res = await request(app)
                 .post("/api/reviews")
                 .send({
-                    revieweeId: tx.sellerId,
+                    revieweeId: sellerId,
                     rating: 5,
                     comment: "Excellent service!",
-                    transactionId: tx.id
+                    transactionId: transactionId
                 });
 
             if (res.status !== 201) {
@@ -342,47 +325,39 @@ describe("API Integration Tests", () => {
         });
     });
 
+    // ── Payment API ─────────────────────────────────────────────────────────────
     describe("Payment API", () => {
-        let buyerId: string;
-        let itemId: string;
-
-        beforeAll(async () => {
-            const buyer = await prisma.user.findFirst({ where: { role: "BUYER" } });
-            buyerId = buyer?.id || "";
-            const item = await prisma.item.findFirst();
-            itemId = item?.id || "";
-        });
-
         it("should return a Stripe session for checkout", async () => {
-            if (!itemId) return;
+            // Find any item to buy
+            const item = await prisma.item.findFirst();
+            if (!item) return;
 
             jest.spyOn(auth.api, "getSession").mockResolvedValue({
                 user: { id: buyerId, role: "BUYER" },
                 session: {}
             } as any);
 
-            // Mock PaymentService to avoid Stripe authentication errors
-            const paymentSpy = jest.spyOn(PaymentService, "createCheckoutSession").mockResolvedValue("https://checkout.stripe.com/test");
+            // Mock PaymentService to avoid hitting actual Stripe in CI
+            const paymentSpy = jest.spyOn(PaymentService, "createCheckoutSession")
+                .mockResolvedValue("https://checkout.stripe.com/test");
 
             const res = await request(app)
                 .post("/api/payment/create-session")
-                .send({ itemId });
+                .send({ itemId: item.id });
 
             expect(res.status).toBe(200);
             expect(res.body).toHaveProperty("url", "https://checkout.stripe.com/test");
 
-            jest.restoreAllMocks();
             paymentSpy.mockRestore();
+            jest.restoreAllMocks();
         });
     });
 
+    // ── Recommendations API ─────────────────────────────────────────────────────
     describe("Recommendations API", () => {
         it("should return recommended items", async () => {
-            const buyer = await prisma.user.findFirst({ where: { role: "BUYER" } });
-            const bid = buyer?.id || "test-user";
-
             jest.spyOn(auth.api, "getSession").mockResolvedValue({
-                user: { id: bid, role: "BUYER" },
+                user: { id: buyerId, role: "BUYER" },
                 session: {}
             } as any);
 
