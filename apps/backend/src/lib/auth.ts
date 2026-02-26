@@ -29,4 +29,5 @@ export const auth = betterAuth({
             domain: ".collector-shop.local",
         },
     },
+    trustProxy: true,
 });
