@@ -15,7 +15,6 @@ export const auth = betterAuth({
         additionalFields: {
             role: {
                 type: "string",
-                values: ["BUYER", "SELLER", "ADMIN"],
                 defaultValue: "BUYER",
             },
         },
@@ -25,8 +24,8 @@ export const auth = betterAuth({
         process.env.BETTER_AUTH_BASE_URL || "http://localhost:8000",
     ],
     advanced: {
-        cookieOptions: {
-            domain: ".collector-shop.local",
+        crossSubDomainCookies: {
+            enabled: true,
         },
     },
 });
