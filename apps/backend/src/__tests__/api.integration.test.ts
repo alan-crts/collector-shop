@@ -228,12 +228,30 @@ describe("API Integration Tests", () => {
 
     // ── Admin API ───────────────────────────────────────────────────────────────
     describe("Admin API", () => {
-        it("should allow an admin to list users", async () => {
-            jest.spyOn(auth.api, "getSession").mockResolvedValue({
-                user: { id: adminId, role: "ADMIN" },
-                session: {}
-            } as any);
+        let testItemId: string;
+        let newCategoryId: string;
 
+        beforeAll(async () => {
+            const item = await prisma.item.create({
+                data: {
+                    title: "Admin Test Item",
+                    description: "Pending for admin review",
+                    price: 75,
+                    sellerId: sellerId,
+                    categoryId: categoryId,
+                    status: "PENDING"
+                }
+            });
+            testItemId = item.id;
+        });
+
+        const adminMock = () => jest.spyOn(auth.api, "getSession").mockResolvedValue({
+            user: { id: adminId, role: "ADMIN" },
+            session: {}
+        } as any);
+
+        it("should allow an admin to list users", async () => {
+            adminMock();
             const res = await request(app).get("/api/admin/users");
             expect(res.status).toBe(200);
             expect(Array.isArray(res.body)).toBe(true);
@@ -245,10 +263,297 @@ describe("API Integration Tests", () => {
                 user: { id: buyerId, role: "BUYER" },
                 session: {}
             } as any);
-
             const res = await request(app).get("/api/admin/users");
             expect(res.status).toBe(403);
             jest.restoreAllMocks();
+        });
+
+        it("should allow an admin to ban a user", async () => {
+            adminMock();
+            const res = await request(app)
+                .post(`/api/admin/users/${buyerId}/ban`)
+                .send({ isBanned: true });
+            expect(res.status).toBe(200);
+            jest.restoreAllMocks();
+
+            // Unban immediately to not break other tests
+            adminMock();
+            await request(app)
+                .post(`/api/admin/users/${buyerId}/ban`)
+                .send({ isBanned: false });
+            jest.restoreAllMocks();
+        });
+
+        it("should return 400 for invalid ban payload", async () => {
+            adminMock();
+            const res = await request(app)
+                .post(`/api/admin/users/${buyerId}/ban`)
+                .send({ isBanned: "not-a-boolean" });
+            expect(res.status).toBe(400);
+            jest.restoreAllMocks();
+        });
+
+        it("should allow an admin to list pending items", async () => {
+            adminMock();
+            const res = await request(app).get("/api/admin/items/pending");
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body)).toBe(true);
+            jest.restoreAllMocks();
+        });
+
+        it("should allow an admin to approve an item", async () => {
+            adminMock();
+            const res = await request(app)
+                .post(`/api/admin/items/${testItemId}/status`)
+                .send({ status: "APPROVED" });
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty("status", "APPROVED");
+            jest.restoreAllMocks();
+        });
+
+        it("should return 400 for invalid item status", async () => {
+            adminMock();
+            const res = await request(app)
+                .post(`/api/admin/items/${testItemId}/status`)
+                .send({ status: "INVALID_STATUS" });
+            expect(res.status).toBe(400);
+            jest.restoreAllMocks();
+        });
+
+        it("should allow an admin to list categories", async () => {
+            adminMock();
+            const res = await request(app).get("/api/admin/categories");
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body)).toBe(true);
+            jest.restoreAllMocks();
+        });
+
+        it("should allow an admin to create a category", async () => {
+            adminMock();
+            const res = await request(app)
+                .post("/api/admin/categories")
+                .send({ name: "New Test Category", slug: `new-test-cat-${Date.now()}` });
+            expect(res.status).toBe(201);
+            expect(res.body).toHaveProperty("name", "New Test Category");
+            newCategoryId = res.body.id;
+            jest.restoreAllMocks();
+        });
+
+        it("should return 400 when creating category without required fields", async () => {
+            adminMock();
+            const res = await request(app)
+                .post("/api/admin/categories")
+                .send({ name: "Missing slug" });
+            expect(res.status).toBe(400);
+            jest.restoreAllMocks();
+        });
+
+        it("should allow an admin to delete a category", async () => {
+            if (!newCategoryId) return;
+            adminMock();
+            const res = await request(app).delete(`/api/admin/categories/${newCategoryId}`);
+            expect(res.status).toBe(204);
+            jest.restoreAllMocks();
+        });
+    });
+
+    // ── User API ────────────────────────────────────────────────────────────────
+    describe("User API", () => {
+        it("should return the authenticated user's profile", async () => {
+            jest.spyOn(auth.api, "getSession").mockResolvedValue({
+                user: { id: buyerId, role: "BUYER" },
+                session: {}
+            } as any);
+
+            const res = await request(app).get("/api/users/profile");
+            expect(res.status).toBe(200);
+            expect(res.body.data).toHaveProperty("id", buyerId);
+            jest.restoreAllMocks();
+        });
+
+        it("should return 401 for profile without auth", async () => {
+            const res = await request(app).get("/api/users/profile");
+            expect(res.status).toBe(401);
+        });
+
+        it("should return a public user profile", async () => {
+            const res = await request(app).get(`/api/users/${sellerId}/public`);
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty("id", sellerId);
+            expect(res.body).toHaveProperty("salesCount");
+        });
+
+        it("should return 404 for non-existent public profile", async () => {
+            const res = await request(app).get("/api/users/non-existent-user/public");
+            expect(res.status).toBe(404);
+        });
+
+        it("should update user interests", async () => {
+            jest.spyOn(auth.api, "getSession").mockResolvedValue({
+                user: { id: buyerId, role: "BUYER" },
+                session: {}
+            } as any);
+
+            const res = await request(app)
+                .put("/api/users/interests")
+                .send({ categoryIds: [categoryId] });
+
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty("message");
+            expect(Array.isArray(res.body.data)).toBe(true);
+            jest.restoreAllMocks();
+        });
+
+        it("should return 400 for invalid interests payload", async () => {
+            jest.spyOn(auth.api, "getSession").mockResolvedValue({
+                user: { id: buyerId, role: "BUYER" },
+                session: {}
+            } as any);
+
+            const res = await request(app)
+                .put("/api/users/interests")
+                .send({ categoryIds: "not-an-array" });
+
+            expect(res.status).toBe(400);
+            jest.restoreAllMocks();
+        });
+    });
+
+    // ── Notifications API ───────────────────────────────────────────────────────
+    describe("Notifications API", () => {
+        const buyerMock = () => jest.spyOn(auth.api, "getSession").mockResolvedValue({
+            user: { id: buyerId, role: "BUYER" },
+            session: {}
+        } as any);
+
+        it("should return notifications for authenticated user", async () => {
+            buyerMock();
+            const res = await request(app).get("/api/notifications");
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            jest.restoreAllMocks();
+        });
+
+        it("should return unread notification counts", async () => {
+            buyerMock();
+            const res = await request(app).get("/api/notifications/unread-counts");
+            expect(res.status).toBe(200);
+            expect(res.body.data).toHaveProperty("notifications");
+            expect(res.body.data).toHaveProperty("messages");
+            expect(res.body.data).toHaveProperty("total");
+            jest.restoreAllMocks();
+        });
+
+        it("should mark all notifications as read", async () => {
+            buyerMock();
+            const res = await request(app).post("/api/notifications/read").send({});
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty("message");
+            jest.restoreAllMocks();
+        });
+
+        it("should mark specific notifications as read", async () => {
+            const notif = await prisma.notification.create({
+                data: {
+                    userId: buyerId,
+                    content: "Test notification content",
+                    type: "SYSTEM"
+                }
+            });
+
+            buyerMock();
+            const res = await request(app)
+                .post("/api/notifications/read")
+                .send({ notificationIds: [notif.id] });
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty("count");
+            jest.restoreAllMocks();
+        });
+
+        it("should return 401 for notifications without auth", async () => {
+            const res = await request(app).get("/api/notifications");
+            expect(res.status).toBe(401);
+        });
+    });
+
+    // ── Transactions API ────────────────────────────────────────────────────────
+    describe("Transactions API", () => {
+        let transactionId: string;
+
+        beforeAll(async () => {
+            const item = await prisma.item.create({
+                data: {
+                    title: "Transaction Test Item",
+                    description: "For transaction tests",
+                    price: 200,
+                    sellerId: sellerId,
+                    categoryId: categoryId
+                }
+            });
+
+            const tx = await prisma.transaction.create({
+                data: {
+                    buyerId: buyerId,
+                    sellerId: sellerId,
+                    itemId: item.id,
+                    amount: 200,
+                    commission: 20,
+                    status: "COMPLETED"
+                }
+            });
+            transactionId = tx.id;
+        });
+
+        it("should return buyer purchase history", async () => {
+            jest.spyOn(auth.api, "getSession").mockResolvedValue({
+                user: { id: buyerId, role: "BUYER" },
+                session: {}
+            } as any);
+
+            const res = await request(app).get("/api/transactions/purchases");
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            jest.restoreAllMocks();
+        });
+
+        it("should return seller sales history", async () => {
+            jest.spyOn(auth.api, "getSession").mockResolvedValue({
+                user: { id: sellerId, role: "SELLER" },
+                session: {}
+            } as any);
+
+            const res = await request(app).get("/api/transactions/sales");
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            jest.restoreAllMocks();
+        });
+
+        it("should return a specific transaction by ID", async () => {
+            jest.spyOn(auth.api, "getSession").mockResolvedValue({
+                user: { id: buyerId, role: "BUYER" },
+                session: {}
+            } as any);
+
+            const res = await request(app).get(`/api/transactions/${transactionId}`);
+            expect(res.status).toBe(200);
+            expect(res.body.data).toHaveProperty("id", transactionId);
+            jest.restoreAllMocks();
+        });
+
+        it("should return 404 for non-existent transaction", async () => {
+            jest.spyOn(auth.api, "getSession").mockResolvedValue({
+                user: { id: buyerId, role: "BUYER" },
+                session: {}
+            } as any);
+
+            const res = await request(app).get("/api/transactions/non-existent-id");
+            expect(res.status).toBe(404);
+            jest.restoreAllMocks();
+        });
+
+        it("should return 401 for purchases without auth", async () => {
+            const res = await request(app).get("/api/transactions/purchases");
+            expect(res.status).toBe(401);
         });
     });
 

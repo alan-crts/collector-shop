@@ -16,6 +16,12 @@ module.exports = {
   collectCoverageFrom: [
     "src/**/*.{ts,tsx}",
     "!src/**/*.d.ts",
-    "!src/__tests__/**"
+    "!src/__tests__/**",
+    // Infrastructure & external-dependency files excluded from coverage
+    "!src/server.ts",
+    "!src/lib/socket.ts",
+    "!src/services/paymentService.ts",
+    "!src/services/messageService.ts",
+    "!src/controllers/uploadController.ts"
   ],
 };
