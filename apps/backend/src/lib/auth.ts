@@ -28,7 +28,7 @@ export const auth = betterAuth({
     advanced: isLocalhost ? undefined : {
         crossSubDomainCookies: {
             enabled: true,
-            domain: ".collector-shop.local",
+            domain: "collector-shop.local",
         },
     },
     trustProxy: true,
