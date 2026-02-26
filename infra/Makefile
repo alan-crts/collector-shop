@@ -4,7 +4,7 @@ MINIKUBE_CPUS ?= 4
 MINIKUBE_MEMORY ?= 8192
 TERRAFORM_DIR = terraform
 
-.PHONY: help up start stop install-argocd deploy port-forward clean status seal get-cert grafana-pass stripe-login stripe-listen
+.PHONY: help up start stop install-argocd deploy port-forward tunnel clean status seal get-cert grafana-pass stripe-login stripe-listen
 
 # Affiche l'aide
 help:
@@ -14,7 +14,8 @@ help:
 	@echo "  make stop           - Arrête minikube"
 	@echo "  make install-argocd - Initialise et applique Terraform pour installer ArgoCD"
 	@echo "  make deploy         - Déploie l'application GitOps ArgoCD (synchronise le dossier k8s)"
-	@echo "  make port-forward   - Rend ArgoCD accessible sur The localhost:8080"
+	@echo "  make port-forward   - Rend ArgoCD accessible sur localhost:8080"
+	@echo "  make tunnel         - (Mac/Linux) Établit la route réseau vers le cluster (nécessaire pour collector-shop.local)"
 	@echo "  make status         - Affiche le statut général du cluster minikube"
 	@echo "  make hosts          - Ajoute l'IP de Minikube dans /etc/hosts (Nécessite sudo)"
 	@echo "  make seal           - Chiffre tous les fichiers secret.yaml en sealed-secret.yaml"
@@ -36,6 +37,7 @@ start:
 		--cpus $(MINIKUBE_CPUS) \
 		--memory $(MINIKUBE_MEMORY) \
 		--driver=qemu \
+		--network=socket_vmnet \
 		--container-runtime=containerd
 
 # Arrêter le cluster
@@ -79,6 +81,12 @@ port-forward:
 	@echo "Exécutez dans un autre terminal pour obtenir le mot de passe :"
 	@echo "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=\"{.data.password}\" | base64 -d; echo"
 	kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# Établir le tunnel réseau
+tunnel:
+	@echo "🌉 Création du tunnel réseau vers Minikube..."
+	@echo "Gardez ce terminal ouvert et entrez votre mot de passe sudo si demandé."
+	minikube tunnel
 
 # Nettoyer l'environnement (Danger)
 clean:
