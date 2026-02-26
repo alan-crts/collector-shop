@@ -22,4 +22,22 @@ const router = Router();
  */
 router.get("/", RecommendationController.getRecommendations);
 
+/**
+ * @swagger
+ * /api/recommendations/similar/{id}:
+ *   get:
+ *     summary: Get similar items for a specific item
+ *     tags: [Recommendations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of similar items
+ */
+router.get("/similar/:id", RecommendationController.getSimilarItems);
+
 export default router;

@@ -18,9 +18,27 @@ export class RecommendationController {
             }
 
             const items = await RecommendationService.getRecommendations(session.user.id);
-            res.json(items);
+            res.json({ data: items });
         } catch (error: any) {
             console.error("Recommendation Fetch Error:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+
+    /**
+     * Retrieves similar items for a specific item
+     */
+    static async getSimilarItems(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id) {
+                res.status(400).json({ error: "Item ID is required" });
+                return;
+            }
+            const items = await RecommendationService.getSimilarItems(id as string);
+            res.json({ data: items });
+        } catch (error: any) {
+            console.error("Similar Items Fetch Error:", error);
             res.status(500).json({ error: "Internal Server Error" });
         }
     }

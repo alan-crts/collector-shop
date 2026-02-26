@@ -35,4 +35,30 @@ export class RecommendationService {
 
         return recommendations;
     }
+
+    /**
+     * Get similar items based on category
+     */
+    static async getSimilarItems(itemId: string): Promise<Item[]> {
+        const item = await prisma.item.findUnique({
+            where: { id: itemId },
+            select: { categoryId: true, sellerId: true }
+        });
+
+        if (!item) return [];
+
+        return prisma.item.findMany({
+            where: {
+                status: "APPROVED",
+                categoryId: item.categoryId,
+                id: { not: itemId },
+                sellerId: { not: item.sellerId }
+            },
+            take: 10,
+            include: {
+                seller: { select: { name: true, image: true } },
+                category: true
+            }
+        });
+    }
 }

@@ -148,8 +148,12 @@ export class ItemController {
                 }
                 throw serviceError;
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("[ItemController] Update Error:", error);
+            if (error.name === "PrismaClientValidationError" || error.code === "P2002") {
+                res.status(400).json({ error: "Invalid data provided" });
+                return;
+            }
             res.status(500).json({ error: "Internal Server Error" });
         }
     }
