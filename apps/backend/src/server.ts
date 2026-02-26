@@ -11,6 +11,12 @@ const port = 8000;
 app.set("trust proxy", true);
 
 app.use((req, res, next) => {
+    const originalSend = res.send;
+    res.send = function (body) {
+        console.log(`[DEBUG] Response: ${res.statusCode} - Set-Cookie:`, res.get("Set-Cookie"));
+        return originalSend.apply(res, arguments as any);
+    };
+
     console.log(`[DEBUG] Request: ${req.method} ${req.url} - Proto: ${req.protocol} - Headers:`, {
         host: req.headers.host,
         origin: req.headers.origin,
