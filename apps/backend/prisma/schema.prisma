@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -15,30 +15,119 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  role          Role    @default(BUYER) // BUYER, SELLER, ADMIN [cite: 152]
-  items         Item[]
-  createdAt     DateTime  @default(now())
+  id            String   @id @default(cuid())
+  email         String   @unique
+  role          Role     @default(BUYER)
   name          String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean  @default(false)
   image         String?
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+
+  // Phase 8 relations
+  items            Item[]
+  interests        Category[] // Implicit Many-to-Many
+  purchases        Transaction[]  @relation("Buyer")
+  sales            Transaction[]  @relation("Seller")
+  reviewsGiven     Review[]       @relation("Reviewer")
+  reviewsReceived  Review[]       @relation("Reviewee")
+  messagesSent     Message[]      @relation("Sender")
+  messagesReceived Message[]      @relation("Receiver")
+  notifications    Notification[]
 
   @@map("user")
 }
 
+model Category {
+  id              String @id @default(cuid())
+  name            String
+  slug            String @unique
+  items           Item[]
+  interestedUsers User[]
+
+  @@map("category")
+}
+
 model Item {
-  id          String @id @default(cuid())
-  title       String
-  description String
-  price       Float // Le prix pour calculer la commission de 5% [cite: 143]
-  status      ItemStatus @default(PENDING) // PENDING, APPROVED, REJECTED [cite: 172]
-  images      String[]   @default([])
-  sellerId    String
-  seller      User   @relation(fields: [sellerId], references: [id])
+  id           String     @id @default(cuid())
+  title        String
+  description  String
+  price        Float
+  shippingCost Float      @default(0.0)
+  status       ItemStatus @default(PENDING)
+  images       String[]   @default([])
+
+  sellerId   String
+  seller     User      @relation(fields: [sellerId], references: [id])
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  transactions Transaction[]
+  messages     Message[]
+}
+
+model Transaction {
+  id              String            @id @default(cuid())
+  itemId          String
+  item            Item              @relation(fields: [itemId], references: [id])
+  buyerId         String
+  buyer           User              @relation("Buyer", fields: [buyerId], references: [id])
+  sellerId        String
+  seller          User              @relation("Seller", fields: [sellerId], references: [id])
+  amount          Float
+  commission      Float
+  status          TransactionStatus @default(PENDING)
+  stripeSessionId String?           @unique
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("transaction")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  rating     Int
+  comment    String?
+  reviewerId String
+  reviewer   User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  revieweeId String
+  reviewee   User     @relation("Reviewee", fields: [revieweeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@map("review")
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  senderId   String
+  sender     User     @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  itemId     String?
+  item       Item?    @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("message")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  content   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@map("notification")
 }
 
 model Session {
@@ -90,13 +179,29 @@ model Verification {
 }
 
 enum Role {
-    BUYER
-    SELLER
-    ADMIN
-} 
+  BUYER
+  SELLER
+  ADMIN
+}
 
 enum ItemStatus {
-    PENDING
-    APPROVED
-    REJECTED
+  PENDING
+  APPROVED
+  REJECTED
+  SOLD
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum NotificationType {
+  PRICE_DROP
+  NEW_MATCHING_ITEM
+  ORDER_STATUS
+  MESSAGE
+  SYSTEM
 }
