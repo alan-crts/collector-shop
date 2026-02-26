@@ -74,8 +74,8 @@ describe("API Integration Tests", () => {
                 senderId = u1.id;
                 receiverId = u2.id;
             } else {
-                senderId = users[0].id;
-                receiverId = users[1].id;
+                senderId = users[0]!.id;
+                receiverId = users[1]!.id;
             }
         });
 
